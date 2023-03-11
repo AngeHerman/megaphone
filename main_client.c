@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
     }
 
     affiche_adresse(server_addr);
+    demande_inscription(fdsock, "ababababab");
     
     return 0;
 }

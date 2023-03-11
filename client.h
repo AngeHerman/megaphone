@@ -7,6 +7,9 @@ void affiche_adresse(struct sockaddr_in6 *adr);
 /* Tente de connecter le client au sserveur puis renvoie un entier spécifiant si la connexion a réussi ou non */
 int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6** addr, int* addrlen);
 
+int demande_inscription(int fd_sock, char * pseudo);
+u_int16_t id_attribue(u_int16_t * mess_server);
+
 void test();
 
 #endif
