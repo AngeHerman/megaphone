@@ -38,7 +38,6 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
   *addrlen = sizeof(struct sockaddr_in6);
   p = r;
   while( p != NULL ){
-    affiche_adresse((struct sockaddr_in6 *) p->ai_addr);
     if((*sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) > 0){
       if(connect(*sock, p->ai_addr, *addrlen) == 0)
 	  break;
@@ -61,30 +60,20 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
 }
 
 int demande_inscription( int fd_sock, char * pseudo){
-   u_int16_t entete = entete_message(1,0);
-  char mess[13]={0};
-  *((u_int16_t*)mess) = entete;
-  memmove(mess+2, pseudo, strlen(pseudo)+1);
-  if(send(fd_sock, mess,12,0) != 12){
+  
+  char * mess_inscr = message_inscription_client(pseudo);
+
+  if(send(fd_sock, mess_inscr,LEN_MESS_INSCR,0) != LEN_MESS_INSCR){
     return -1;
   } 
+  free(mess_inscr);
  
   //réponse du serveur
   u_int16_t rep[3];
   if(recv(fd_sock,rep, sizeof(rep) ,0) != sizeof(rep)){
     return -1;
   }
-  printf("reponse_recue\n");
-  uint8_t cod_req;
-  uint16_t id;
-  u_int16_t numfil = ntohs(rep[1]);
-  u_int16_t nb = ntohs(rep[2]);
-  entete = ntohs(rep[0]);
-  u_int16_t masque = 0b0000000000011111;
-  cod_req = entete & masque;
-  id = entete & ~masque;
 
-  printf("code_req : %d, id : %d, numfil : %d, nb : %d\n" , cod_req, id, numfil, nb);
-
+  uint16_t id = reponse_inscription(rep);
   return id;
 }

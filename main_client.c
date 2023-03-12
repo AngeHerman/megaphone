@@ -13,6 +13,8 @@
 
 int main(int argc, char** argv) {
 
+    u_int16_t id_client = -1;
+
     char hostname[SIZE_MESS];
     char port[SIZE_MESS];
     if (argc < 3) {
@@ -35,7 +37,9 @@ int main(int argc, char** argv) {
     }
 
     affiche_adresse(server_addr);
-    demande_inscription(fdsock, "ababababab");
+    id_client = demande_inscription(fdsock, "aaaaaa");
     
+    close(fdsock);
+
     return 0;
 }

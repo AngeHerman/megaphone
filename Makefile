@@ -16,4 +16,4 @@ fils.o : fils.c fils.h
 inscrits.o : inscrits.c inscrits.h
 	gcc -c inscrits.c -o inscrits.o
 clean : 
-	rm test main_client *.o
+	rm -rf test main_client *.o
