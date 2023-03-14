@@ -5,6 +5,9 @@
 
 #define LEN_PSEUDO 10
 #define LEN_MESS_INSCR 12 //entête de deux octets + 10 octets pour le pseudo
+#define LEN_MESS_DMD_BILLETS 6// entête de deux octets + 2 octets numfil + 2 octets nb
+
+#define CODE_REQ_DEMANDE_BILLETS 3 //code_req pour la demande des billets
 
 /**
  * client : 
@@ -68,7 +71,14 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
 */
 u_int16_t reponse_inscription(u_int16_t * rep);
 
-
+/**
+ * @param id id du client
+ * @param numfil numéro de fil
+ * @param nb numéro de port ou nombre de messages
+ * 
+ * @return le message du client au bon format
+*/
+char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb);
 
 
 

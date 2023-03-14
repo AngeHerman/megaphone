@@ -77,3 +77,30 @@ int demande_inscription( int fd_sock, char * pseudo){
   uint16_t id = reponse_inscription(rep);
   return id;
 }
+
+int demande_dernier_billets(int fd_sock,u_int16_t id_client,uint16_t numfil, uint16_t nb){
+  char * mess_dernier_billets = message_dernier_billets(id_client,numfil,nb);
+  if(send(fd_sock, mess_dernier_billets,LEN_MESS_DMD_BILLETS,0) != LEN_MESS_DMD_BILLETS){
+    return -1;
+  } 
+  free(mess_dernier_billets);
+ 
+  //réponse du serveur
+  char * rep[8];
+  int taille = 0;
+  if((taille = recv(fd_sock,rep, sizeof(rep) ,0)) <= 0){
+    return -1;
+  }
+
+  printf("La taille est %d\n",taille);
+  return taille;
+
+}
+
+int demande_dernier_billets_tous_les_fils(int fd_sock,u_int16_t id_client){
+  uint16_t numfil = 0;
+  uint16_t nb = 4;
+  int result = demande_dernier_billets(fd_sock,id_client,numfil,nb);
+  return result;
+
+}

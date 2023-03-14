@@ -77,3 +77,8 @@ u_int16_t reponse_inscription(u_int16_t * rep){
   printf("inscription réussie. ID attribué : %d\n", id);
   return id;
 }
+
+char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
+  uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;
+  return message_client(code_req,id,numfil,nb,0,"");
+}
