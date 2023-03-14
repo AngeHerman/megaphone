@@ -5,7 +5,7 @@
 
 #define LEN_PSEUDO 10
 #define LEN_MESS_INSCR 12 //entête de deux octets + 10 octets pour le pseudo
-#define LEN_MESS_DMD_BILLETS 6// entête de deux octets + 2 octets numfil + 2 octets nb
+#define LEN_MESS_DMD_BILLETS 7// entête de deux octets + 2 octets numfil + 2 octets nb + 1 octet datalen
 
 #define CODE_REQ_DEMANDE_BILLETS 3 //code_req pour la demande des billets
 

@@ -79,27 +79,35 @@ int demande_inscription( int fd_sock, char * pseudo){
 }
 
 int demande_dernier_billets(int fd_sock,u_int16_t id_client,uint16_t numfil, uint16_t nb){
+  printf("Demande derniers billets\n");
+
   char * mess_dernier_billets = message_dernier_billets(id_client,numfil,nb);
+  printf("Avant send\n");
   if(send(fd_sock, mess_dernier_billets,LEN_MESS_DMD_BILLETS,0) != LEN_MESS_DMD_BILLETS){
+    free(mess_dernier_billets);
     return -1;
   } 
+  printf("Apres send\n");
+
   free(mess_dernier_billets);
  
   //réponse du serveur
-  char * rep[8];
+  u_int16_t rep[3];
   int taille = 0;
-  if((taille = recv(fd_sock,rep, sizeof(rep) ,0)) <= 0){
+  if((taille = recv(fd_sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
+    printf("Taille est %d\n",taille);
+    // printf("rep est est %s\n",rep);
     return -1;
   }
 
   printf("La taille est %d\n",taille);
-  return taille;
+  return 1;
 
 }
 
 int demande_dernier_billets_tous_les_fils(int fd_sock,u_int16_t id_client){
   uint16_t numfil = 0;
-  uint16_t nb = 4;
+  uint16_t nb = 4; // Pour l'instant je teste avec la demande des 4 derniers billets de tous les fils
   int result = demande_dernier_billets(fd_sock,id_client,numfil,nb);
   return result;
 

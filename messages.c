@@ -53,7 +53,7 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
 
   //copier le texte du message
   if(datalen > 0){
-    memmove(res+7, data, strlen(data));      
+    memmove(res+7, data, strlen(data));    
   }
 
   return res;
@@ -79,6 +79,7 @@ u_int16_t reponse_inscription(u_int16_t * rep){
 }
 
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
-  uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;
-  return message_client(code_req,id,numfil,nb,0,"");
+  uint16_t code_req = 3;
+  uint8_t datalen = 0;
+  return message_client(code_req,id,numfil,nb,datalen,"");
 }
