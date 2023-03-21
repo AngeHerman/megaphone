@@ -80,6 +80,13 @@ u_int16_t reponse_inscription(u_int16_t * rep);
 */
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb);
 
+/**
+ * @param rep la reponse du serveur à décoder
+ * 
+ * @return le nombre de message à venir
+*/
+u_int16_t reponse_derniers_billets(u_int16_t * rep);
+
 
 
 #endif

@@ -60,19 +60,24 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
 }
 
 int demande_inscription( int fd_sock, char * pseudo){
+  printf("Arrivé a\n");
   
   char * mess_inscr = message_inscription_client(pseudo);
+  printf("Arrivé a\n");
 
   if(send(fd_sock, mess_inscr,LEN_MESS_INSCR,0) != LEN_MESS_INSCR){
     return -1;
   } 
   free(mess_inscr);
+  printf("Arrivé avant recv\n");
+
  
   //réponse du serveur
   u_int16_t rep[3];
   if(recv(fd_sock,rep, sizeof(rep) ,0) != sizeof(rep)){
     return -1;
   }
+  printf("Arrivé apres recv\n");
 
   uint16_t id = reponse_inscription(rep);
   return id;
@@ -100,14 +105,14 @@ int demande_dernier_billets(int fd_sock,u_int16_t id_client,uint16_t numfil, uin
     return -1;
   }
 
-  printf("La taille est %d\n",taille);
-  return 1;
+  uint16_t nbb = reponse_derniers_billets(rep);
+  return nbb;
 
 }
 
 int demande_dernier_billets_tous_les_fils(int fd_sock,u_int16_t id_client){
-  uint16_t numfil = 0;
-  uint16_t nb = 4; // Pour l'instant je teste avec la demande des 4 derniers billets de tous les fils
+  uint16_t numfil = 1;
+  uint16_t nb = 2; // Pour l'instant je teste avec la demande des 4 derniers billets de tous les fils
   int result = demande_dernier_billets(fd_sock,id_client,numfil,nb);
   return result;
 

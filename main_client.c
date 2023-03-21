@@ -12,35 +12,36 @@
 #define SIZE_MESS 100
 
 int main(int argc, char** argv) {
+  u_int16_t id_client = -1;
 
-    u_int16_t id_client = -1;
+  char hostname[SIZE_MESS];
+  char port[SIZE_MESS];
+  if (argc < 3) {
+      sprintf(hostname,"%s",DEFAULT_SERVER);
+      sprintf(port,"%s",DEFAULT_PORT);
+  }else{
+      sprintf(hostname,"%s",argv[1]);
+      sprintf(port,"%s",argv[2]);
+  }
+  struct sockaddr_in6* server_addr;
+  int fdsock, adrlen;
 
-    char hostname[SIZE_MESS];
-    char port[SIZE_MESS];
-    if (argc < 3) {
-        sprintf(hostname,"%s",DEFAULT_SERVER);
-        sprintf(port,"%s",DEFAULT_PORT);
-    }else{
-        sprintf(hostname,"%s",argv[1]);
-        sprintf(port,"%s",argv[2]);
-    }
-    struct sockaddr_in6* server_addr;
-    int fdsock, adrlen;
-    
-    switch (get_server_addr(hostname,port, &fdsock, &server_addr, &adrlen)) {
+  switch (get_server_addr(hostname,port, &fdsock, &server_addr, &adrlen)) {
     case 0: printf("adresse creee !\n"); break;
     case -1:
       fprintf(stderr, "Erreur: hote non trouve.\n"); 
     case -2:
       fprintf(stderr, "Erreur: echec de creation de la socket.\n");
       exit(1);
-    }
+  }
 
-    affiche_adresse(server_addr);
-    id_client = demande_inscription(fdsock, "aaaaaa");
-    int result = demande_dernier_billets_tous_les_fils(fdsock,id_client);
-    printf("Fin\n");
-    close(fdsock);
+  affiche_adresse(server_addr);
+  // id_client = demande_inscription(fdsock, "aaaaaa");
+  // printf("id client est %d\n",id_client);
+  uint16_t id = 173;
+  int result = demande_dernier_billets_tous_les_fils(fdsock,id);
+  printf("Fin\n");
+  close(fdsock);
 
-    return 0;
+  return 0;
 }

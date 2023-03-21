@@ -67,7 +67,7 @@ u_int16_t reponse_inscription(u_int16_t * rep){
   u_int16_t entete = ntohs(rep[0]);
   u_int16_t masque = 0b0000000000011111;
   cod_req = entete & masque;
-  id = entete & ~masque;
+  id = (entete & ~masque) >> 5;
 
   if(cod_req!=1 || numfil!=0 || nb!=0){
     fprintf(stderr, "message de confirmation d'inscription erroné\n");
@@ -79,7 +79,27 @@ u_int16_t reponse_inscription(u_int16_t * rep){
 }
 
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
-  uint16_t code_req = 3;
+  uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;
   uint8_t datalen = 0;
   return message_client(code_req,id,numfil,nb,datalen,"");
+}
+
+u_int16_t reponse_derniers_billets(u_int16_t * rep){
+  uint8_t cod_req;
+  uint16_t id;
+  u_int16_t numfil = ntohs(rep[1]);
+  u_int16_t nb = ntohs(rep[2]);
+  u_int16_t entete = ntohs(rep[0]);
+  u_int16_t masque = 0b0000000000011111;
+  cod_req = entete & masque;
+  id = (entete & ~masque) >> 5;
+  
+
+  if(cod_req!= CODE_REQ_DEMANDE_BILLETS){
+    fprintf(stderr, "reponse de demande des derniers billets erroné et le code reçu est %d\n",cod_req);
+    return -1;
+  }
+  
+  printf("id est %u %hu codereq est %d Numfil est %d et Nb est %d\n",id,cod_req,numfil,nb);
+  return nb;
 }
