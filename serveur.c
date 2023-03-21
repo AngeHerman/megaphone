@@ -22,14 +22,15 @@ uint16_t entete_message(uint16_t code_req, uint16_t id){
     return htons(res);
 }
 
-u_int16_t message_inscription_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb){
-    u_int16_t res[3];
+u_int16_t * message_inscription_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb){
+    u_int16_t * res = malloc(6 * sizeof(char));
     //remplir l'entête
     ((uint16_t *)res)[0] = entete_message(code_req,id);
     //les autres champs
     ((uint16_t *)res)[1] = htons(numfil);
     ((uint16_t *)res)[2] = htons(nb);
-    return * res;
+    printf("test");
+    return res;
 }
 
 void *serve(void *arg) {
@@ -37,8 +38,9 @@ void *serve(void *arg) {
     /*reception de message*/
     char buf [MESSAGE_SIZE];
     memset(buf, 0, sizeof(buf));
-    if(recv(sock,buf, (MESSAGE_SIZE-1)*sizeof(char) ,0) != sizeof(buf)){
-        perror("recv");
+    int r = recv(sock,buf, (MESSAGE_SIZE-1)*sizeof(char) ,0);
+    if(r < 0){
+        perror("recv error");
         close(sock);
         int *ret = malloc(sizeof(int));
         *ret = 1;
@@ -50,8 +52,8 @@ void *serve(void *arg) {
     uint16_t numfil = 0;
     uint16_t nb = 0;
     /*renvoie message inscription*/
-    uint16_t res = message_inscription_server(code_req, id, numfil, nb);
-    if(send(sock,&res,sizeof(res),0) != sizeof(res)){
+    uint16_t * res = message_inscription_server(code_req, id, numfil, nb);
+    if(send(sock,res,sizeof(res),0) != sizeof(res)){
         perror("send");
         close(sock);
         int *ret = malloc(sizeof(int));

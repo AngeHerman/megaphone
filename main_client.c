@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
     affiche_adresse(server_addr);
     id_client = demande_inscription(fdsock, "aaaaaa");
-    int result = demande_dernier_billets_tous_les_fils(fdsock,id_client);
+    /*int result = demande_dernier_billets_tous_les_fils(fdsock,id_client);*/
     printf("Fin\n");
     close(fdsock);
 
