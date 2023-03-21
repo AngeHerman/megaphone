@@ -7,32 +7,57 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#define MESSAGE_SIZE 100
 #define SIZE_BUF 256
+
+static uint16_t id = 0;
+
+uint16_t entete_message(uint16_t code_req, uint16_t id){
+    uint16_t res = 0;
+
+    res+=code_req;
+    id = id<<5;
+    res+=id;
+    
+    return htons(res);
+}
+
+u_int16_t message_inscription_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb){
+    u_int16_t res[3];
+    //remplir l'entête
+    ((uint16_t *)res)[0] = entete_message(code_req,id);
+    //les autres champs
+    ((uint16_t *)res)[1] = htons(numfil);
+    ((uint16_t *)res)[2] = htons(nb);
+    return * res;
+}
 
 void *serve(void *arg) {
     int sock = *((int *) arg);
-    char buf[SIZE_BUF];
+    /*reception de message*/
+    char buf [MESSAGE_SIZE];
     memset(buf, 0, sizeof(buf));
-    
-    int recu = recv(sock, buf, SIZE_BUF, 0);
-    if (recu < 0){
+    if(recv(sock,buf, (MESSAGE_SIZE-1)*sizeof(char) ,0) != sizeof(buf)){
         perror("recv");
         close(sock);
         int *ret = malloc(sizeof(int));
         *ret = 1;
         pthread_exit(ret);
     }
-    if(recu == 0){
-        fprintf(stderr, "send du client nul\n");
-        close(sock);
-        return NULL;
-    }
-    printf("recu : %s\n", buf);
-    char c = 'o';
-    int ecrit = send(sock, &c, 1, 0);
-    if(ecrit <= 0)
+    /*valeurs du message retour*/
+    uint16_t code_req = 1;
+    id = id+1;
+    uint16_t numfil = 0;
+    uint16_t nb = 0;
+    /*renvoie message inscription*/
+    uint16_t res = message_inscription_server(code_req, id, numfil, nb);
+    if(send(sock,&res,sizeof(res),0) != sizeof(res)){
         perror("send");
-
+        close(sock);
+        int *ret = malloc(sizeof(int));
+        *ret = 1;
+        pthread_exit(ret);
+    }
     close(sock);
     return NULL;
     }
@@ -98,9 +123,10 @@ void *serve(void *arg) {
         char nom_dst[INET6_ADDRSTRLEN];
         printf("client connecte : %s %d\n", inet_ntop(AF_INET6,&addrclient.sin6_addr,nom_dst,sizeof(nom_dst)), htons(addrclient.sin6_port));
         }
+
     }
     //*** fermeture socket serveur ***
     close(sock);
     
     return 0;
-}
+}  
