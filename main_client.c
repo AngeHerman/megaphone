@@ -5,7 +5,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
+
 #include "client.h"
+#include "buf.h"
 
 #define DEFAULT_SERVER "lulu"
 #define DEFAULT_PORT "7777"
@@ -34,14 +36,18 @@ int main(int argc, char** argv) {
       fprintf(stderr, "Erreur: echec de creation de la socket.\n");
       exit(1);
   }
-
+  buf_t * buffer = creer_buf_t();
+  if(buffer==NULL){
+    perror("malloc");
+    return -1;
+  }
   affiche_adresse(server_addr);
-  // id_client = demande_inscription(fdsock, "aaaaaa");
-  // printf("id client est %d\n",id_client);
-  uint16_t id = 173;
-  int result = demande_dernier_billets_tous_les_fils(fdsock,id);
+  id_client = demande_inscription(fdsock, "aaaaaa");
+  printf("id client est %d\n",id_client);
+  uint16_t id = 65535;
+  // int result = demande_dernier_billets_tous_les_fils(fdsock,id,buffer);
   printf("Fin\n");
   close(fdsock);
-
+  free(buffer);
   return 0;
 }

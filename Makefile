@@ -1,11 +1,13 @@
-main_client : main_client.o messages.o client.o
-	gcc main_client.o client.o messages.o -o main_client
+main_client : main_client.o messages.o client.o buf.o
+	gcc main_client.o client.o messages.o buf.o -o main_client
 main_client.o : main_client.c client.h
 	gcc -c main_client.c -o main_client.o
 client.o : client.c client.h messages.h
 	gcc -c client.c -o client.o
 messages.o : messages.c messages.h
 	gcc -c messages.c -o messages.o
+buf.o : buf.c buf.h
+	gcc -c buf.c -o buf.o
 
 test : messages.o test.o inscrits.o fils.o
 	gcc test.o messages.o inscrits.o fils.o -o test

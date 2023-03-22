@@ -100,6 +100,6 @@ u_int16_t reponse_derniers_billets(u_int16_t * rep){
     return -1;
   }
   
-  printf("id est %u %hu codereq est %d Numfil est %d et Nb est %d\n",id,cod_req,numfil,nb);
+  printf("id est %u codereq est %u Numfil est %u et Nb est %u\n",id,cod_req,numfil,nb);
   return nb;
 }
