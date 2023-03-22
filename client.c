@@ -7,7 +7,7 @@
 #include <sys/time.h>
 
 #include "client.h"
-#include "messages.h"
+#include "messages_client.h"
 
 void test(){
     printf("TEST\n");
