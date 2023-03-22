@@ -6,11 +6,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include "inscrits.h"
 
 #define MESSAGE_SIZE 100
 #define SIZE_BUF 256
 
-static uint16_t id = 0;
+inscrits_t * inscrits;
 
 uint16_t entete_message(uint16_t code_req, uint16_t id){
     uint16_t res = 0;
@@ -22,49 +23,64 @@ uint16_t entete_message(uint16_t code_req, uint16_t id){
     return htons(res);
 }
 
-u_int16_t * message_inscription_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb){
-    u_int16_t * res = malloc(6 * sizeof(char));
+char * message_inscription_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb){
+    char * res = malloc(6 * sizeof(char));
     //remplir l'entête
     ((uint16_t *)res)[0] = entete_message(code_req,id);
     //les autres champs
     ((uint16_t *)res)[1] = htons(numfil);
     ((uint16_t *)res)[2] = htons(nb);
-    printf("test");
     return res;
+}
+
+/*Verifie le codereq recu*/
+u_int8_t codereq_recu(uint16_t rep){
+    uint8_t cod_req;
+    uint16_t id;
+    u_int16_t entete = ntohs(rep);
+    u_int16_t masque = 0b0000000000011111;
+    cod_req = entete & masque;
+    return cod_req;
 }
 
 void *serve(void *arg) {
     int sock = *((int *) arg);
     /*reception de message*/
-    char buf [MESSAGE_SIZE];
-    memset(buf, 0, sizeof(buf));
-    int r = recv(sock,buf, (MESSAGE_SIZE-1)*sizeof(char) ,0);
-    if(r < 0){
-        perror("recv error");
+    uint16_t buf;
+    int r =recv(sock,&buf, sizeof(buf) ,0);
+    if(r == sizeof(buf)) {
+        /*recupération du codereq et verification du type de demande*/
+        if(codereq_recu(buf) == 1){
+            /*valeurs du message retour*/
+            char buf[10+1];
+            memset(buf, 0, sizeof(buf));
+            if(recv(sock,&buf, sizeof(buf) ,0) != sizeof(buf)){
+                perror("recv");
+            }
+            buf[10]= '\0';
+            uint16_t id = add_user(inscrits,buf);
+            uint16_t code_req = 1;
+            uint16_t numfil = 0;
+            uint16_t nb = 0;
+            /*renvoie message inscription*/
+            char * res = message_inscription_server(code_req, id, numfil, nb);
+            if(send(sock,res,sizeof(res),0) != sizeof(res)){
+                perror("send");
+                close(sock);
+                int *ret = malloc(sizeof(int));
+                *ret = 1;
+                pthread_exit(ret);
+            }
+        }
         close(sock);
-        int *ret = malloc(sizeof(int));
-        *ret = 1;
-        pthread_exit(ret);
+        return NULL;
     }
-    /*valeurs du message retour*/
-    uint16_t code_req = 1;
-    id = id+1;
-    uint16_t numfil = 0;
-    uint16_t nb = 0;
-    /*renvoie message inscription*/
-    uint16_t * res = message_inscription_server(code_req, id, numfil, nb);
-    if(send(sock,res,sizeof(res),0) != sizeof(res)){
-        perror("send");
-        close(sock);
-        int *ret = malloc(sizeof(int));
-        *ret = 1;
-        pthread_exit(ret);
-    }
-    close(sock);
-    return NULL;
-    }
+}
 
-    int main(int argc, char *argv[]){
+int main(int argc, char *argv[]){
+    /*Creation liste d'inscrits*/
+    inscrits = creer_inscrits_t();
+
     //*** creation de l'adresse du destinataire (serveur) ***
     struct sockaddr_in6 address_sock;
     memset(&address_sock, 0, sizeof(address_sock));

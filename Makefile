@@ -1,5 +1,7 @@
 main_client : main_client.o messages.o client.o
-	gcc main_client.o client.o messages.o -o main_client
+	gcc main_client.o client.o messages.o -o main_client 
+main_serveur : serveur.o inscrits.o 
+	gcc serveur.o inscrits.o -o main_serveur
 main_client.o : main_client.c client.h
 	gcc -c main_client.c -o main_client.o
 client.o : client.c client.h messages.h
@@ -16,4 +18,6 @@ fils.o : fils.c fils.h
 inscrits.o : inscrits.c inscrits.h
 	gcc -c inscrits.c -o inscrits.o
 clean : 
-	rm -rf test main_client *.o
+	rm -rf test main_client main_serveur *.o
+serveur.o : serveur.c 
+	gcc -c serveur.c -o serveur.o
