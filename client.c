@@ -8,6 +8,8 @@
 
 #include "client.h"
 #include "messages_client.h"
+#include "buf.h"
+
 
 void test(){
     printf("TEST\n");
@@ -60,55 +62,67 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
 }
 
 int demande_inscription( int fd_sock, char * pseudo){
+  printf("Arrivé a\n");
   
   char * mess_inscr = message_inscription_client(pseudo);
+  printf("Arrivé a\n");
 
   if(send(fd_sock, mess_inscr,LEN_MESS_INSCR,0) != LEN_MESS_INSCR){
     return -1;
   } 
   free(mess_inscr);
+  printf("Arrivé avant recv\n");
+
  
   //réponse du serveur
   u_int16_t rep[3];
   if(recv(fd_sock,rep, sizeof(rep) ,0) != sizeof(rep)){
     return -1;
   }
+  printf("Arrivé apres recv\n");
 
   uint16_t id = reponse_inscription(rep);
   return id;
 }
 
-int demande_dernier_billets(int fd_sock,u_int16_t id_client,uint16_t numfil, uint16_t nb){
-  printf("Demande derniers billets\n");
+int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16_t nb,buf_t* buffer){
 
   char * mess_dernier_billets = message_dernier_billets(id_client,numfil,nb);
-  printf("Avant send\n");
-  if(send(fd_sock, mess_dernier_billets,LEN_MESS_DMD_BILLETS,0) != LEN_MESS_DMD_BILLETS){
+  if(send(sock, mess_dernier_billets,LEN_MESS_DMD_BILLETS,0) != LEN_MESS_DMD_BILLETS){
     free(mess_dernier_billets);
     return -1;
   } 
-  printf("Apres send\n");
 
   free(mess_dernier_billets);
  
   //réponse du serveur
   u_int16_t rep[3];
   int taille = 0;
-  if((taille = recv(fd_sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
+  if((taille = recv(sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
     printf("Taille est %d\n",taille);
-    // printf("rep est est %s\n",rep);
     return -1;
   }
 
-  printf("La taille est %d\n",taille);
-  return 1;
+  uint16_t nbb = reponse_derniers_billets(rep);
+  char msg[SIZE_BUF +1];
+  int result;
+  memset(msg, 0, sizeof(SIZE_BUF+1));
+  for(int i = 0; i < nbb; i++){
+    result = read_buf(sock,buffer,msg,NB_OCTECS_DERNIERS_MESSAGE_JUSQUA_DATALEN);
+    uint8_t datalen = ((uint8_t *)msg)[NB_OCTECS_DERNIERS_MESSAGE_JUSQUA_DATALEN -1];
+    printf("La taille de ce qui arrive est %u\n",datalen);
+    result = read_buf(sock,buffer,msg,datalen);
+    printf("Message %d est <%s>\n",i,msg+NB_OCTECS_DERNIERS_MESSAGE_JUSQUA_DATALEN);
+    
+  }
+  return nbb;
 
 }
 
-int demande_dernier_billets_tous_les_fils(int fd_sock,u_int16_t id_client){
-  uint16_t numfil = 0;
-  uint16_t nb = 4; // Pour l'instant je teste avec la demande des 4 derniers billets de tous les fils
-  int result = demande_dernier_billets(fd_sock,id_client,numfil,nb);
+int demande_dernier_billets_tous_les_fils(int sock,u_int16_t id_client,buf_t* buffer){
+  uint16_t numfil = 1;
+  uint16_t nb = 2; // Pour l'instant je teste avec la demande des 4 derniers billets de tous les fils
+  int result = demande_dernier_billets(sock,id_client,numfil,nb,buffer);
   return result;
 
 }
