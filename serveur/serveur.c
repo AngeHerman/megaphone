@@ -100,8 +100,8 @@ int lire_jusqua_datalen(int sock, uint16_t *numfil, uint16_t *nb, uint8_t *datal
         free_buf(buf);
         return 0;
     }
-    *numfil = ((uint16_t *)buf->buf)[0];
-    *nb = ((uint16_t *)buf->buf)[1];
+    *numfil = (ntohs)(((uint16_t *)buf->buf)[0]);
+    *nb = (ntohs)(((uint16_t *)buf->buf)[1]);
     *datalen = ((uint8_t *)buf->buf)[4];
     free_buf(buf);
     return 1;
@@ -139,31 +139,25 @@ int confirmer_ajout_billet(int sock, uint16_t numfil, u_int16_t id)
 
 int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
 {
-    printf("je suis la\n");
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
         printf("%d_n",id);
-        printf("probleme inscrits\n");
         return 0;
     }
     u_int16_t numfil;
     u_int16_t nb;
     u_int8_t datalen;
     if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
-        printf("probleme_lire_jusqua\n");
         return 0;
     }
     if (nb != 0){ // nb doit être 0 dans le message client
-        printf("probleme nb\n");
         return 0;
     }
     char data[datalen + 1];
     memset(data, 0, sizeof(data));
     if (!lire_data(sock, datalen, data)){ // on met le texte du billet dans data
-        printf("probleme_lire_data\n");
         return 0;
     }
-    printf("data : %s\n", data);
     // ajouter le billet
     if (numfil == 0)
     { // on ajoute le billet dans un nouveau fil
@@ -175,5 +169,6 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
     }
     // on ajoute le billet dans le fil numfil
     ajouter_billet_num(fils, numfil, pseudo, datalen, data);
+
     return confirmer_ajout_billet(sock, numfil, id);
 }
