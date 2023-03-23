@@ -7,12 +7,37 @@
 #include <unistd.h>
 #include <pthread.h>
 
-/*Verifie le codereq recu*/
-u_int8_t codereq_recu(uint16_t rep){
-    uint8_t cod_req;
-    uint16_t id;
-    u_int16_t entete = ntohs(rep);
-    u_int16_t masque = 0b0000000000011111;
-    cod_req = entete & masque;
-    return cod_req;
+#include "serveur.h"
+#include "lecture.h"
+
+
+uint16_t lire_entete(int sock){
+    buf_t * buf = creer_buf_t(2);
+    if(buf==NULL)
+        return -1;
+    int r = read_msg(sock, buf);
+    if(r==0){
+        free(buf);
+        return -1;
+    }
+    uint16_t entete = ntohs(*((uint16_t *)buf->buf));
+    free(buf);
+    return entete;
+}
+
+char * lire_pseudo(int sock){
+    buf_t * buf = creer_buf_t(10);
+    if(buf==NULL)
+        return NULL;
+    int r = read_msg(sock, buf);
+    if(r==0){
+        free(buf);
+        return NULL;
+    }
+    char * pseudo = malloc(11*sizeof(char));
+    if(pseudo==NULL)
+        return NULL;
+    memmove(pseudo, buf->buf, 10);
+    free(buf);
+    return pseudo;
 }

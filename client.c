@@ -62,25 +62,21 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
 }
 
 int demande_inscription( int fd_sock, char * pseudo){
-  printf("Arrivé a\n");
-  
   char * mess_inscr = message_inscription_client(pseudo);
-  printf("Arrivé a\n");
-
+  
   if(send(fd_sock, mess_inscr,LEN_MESS_INSCR,0) != LEN_MESS_INSCR){
     return -1;
   } 
   free(mess_inscr);
-  printf("Arrivé avant recv\n");
-
  
   //réponse du serveur
   u_int16_t rep[3];
-  if(recv(fd_sock,rep, sizeof(rep) ,0) != sizeof(rep)){
+  int len = 0;
+  if( (len = recv(fd_sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
+    printf("%d\n", len);
     return -1;
   }
-  printf("Arrivé apres recv\n");
-
+  printf("la\n");
   uint16_t id = reponse_inscription(rep);
   return id;
 }

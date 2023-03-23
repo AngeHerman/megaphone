@@ -16,45 +16,50 @@ fils_t * fils;
 
 void *serve(void *arg) {
     int sock = *((int *) arg);
-    /*reception de message*/
-    uint16_t buf;
-    int r =recv(sock,&buf, sizeof(buf) ,0);
-    if(r == sizeof(buf)) {
-        /*recupération du codereq et verification du type de demande*/
-        switch(codereq_recu(buf)){
-            /*demande d'inscription*/
-            case 1: 
-                /*valeurs du message retour*/
-                char buf[10+1];
-                memset(buf, 0, sizeof(buf));
-                if(recv(sock,&buf, sizeof(buf) ,0) != sizeof(buf)){
-                    perror("recv");
-                }
-                buf[10]= '\0';
-                uint16_t id = add_user(inscrits,buf);
-                uint16_t code_req = 1;
-                uint16_t numfil = 0;
-                uint16_t nb = 0;
-                /*renvoie message inscription*/
-                char * res = message_inscription_server(code_req, id, numfil, nb);
-                if(send(sock,res,sizeof(res),0) != sizeof(res)){
-                    perror("send");
-                    close(sock);
-                    int *ret = malloc(sizeof(int));
-                    *ret = 1;
-                    pthread_exit(ret);
-                }
-                break;
-        }
-        close(sock);
+    u_int16_t entete =lire_entete(sock);
+    if(entete == -1){
+        perror("erreur réception du message");
         return NULL;
     }
+
+    /*recupération du codereq et verification du type de demande*/
+    switch(get_code_req(entete)){
+        /*demande d'inscription*/
+        case 1: 
+            char * pseudo = lire_pseudo(sock);
+            uint16_t id = add_user(inscrits, pseudo);
+            if(id == 0 || id == -1){
+                if(id == 0)
+                    fprintf(stderr, "mémoire pleine");
+                if(id == -1)
+                    fprintf(stderr, "erreur malloc");
+                close(sock);
+                int *ret = malloc(sizeof(int));
+                *ret = 1;
+                pthread_exit(ret);
+            }
+            char * mess = message_server(1,id,0,0);
+
+            if(send(sock,mess,6,0) != 6){
+                perror("send");
+                free(mess);
+                close(sock);
+                int *ret = malloc(sizeof(int));
+                *ret = 1;
+                pthread_exit(ret);
+            }
+            free(mess);
+            break;
+    }
+    close(sock);
+    return NULL;
 }
 
 int main(int argc, char *argv[]){
     /*Creation liste d'inscrits*/
     inscrits = creer_inscrits_t();
-    fils = creer_fils_t();
+    /*Création liste de fils*/
+    fils = creer_list_fils();
 
     //*** creation de l'adresse du destinataire (serveur) ***
     struct sockaddr_in6 address_sock;
@@ -69,17 +74,16 @@ int main(int argc, char *argv[]){
         perror("creation socket");
         exit(1);
     }
-
     int optval = 0;
     int r = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(optval));
     if (r < 0) 
-    perror("erreur connexion IPv4 impossible");
+        perror("erreur connexion IPv4 impossible");
 
     //*** le numero de port peut etre utilise en parallele ***
     optval = 1;
     r = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
     if (r < 0) 
-    perror("erreur réutilisation de port impossible");
+        perror("erreur réutilisation de port impossible");
 
     //*** on lie la socket au port ***
     r = bind(sock, (struct sockaddr *) &address_sock, sizeof(address_sock));
@@ -106,20 +110,18 @@ int main(int argc, char *argv[]){
         *sock_client = accept(sock, (struct sockaddr *) &addrclient, &size);
 
         if (sock_client >= 0) {
-        pthread_t thread;
-        //*** le serveur cree un thread et passe un pointeur sur socket client à la fonction serve ***
-        if (pthread_create(&thread, NULL, serve, sock_client) == -1) {
-        perror("pthread_create");
-        continue;
-        }  
-        //*** affichage de l'adresse du client ***
-        char nom_dst[INET6_ADDRSTRLEN];
-        printf("client connecte : %s %d\n", inet_ntop(AF_INET6,&addrclient.sin6_addr,nom_dst,sizeof(nom_dst)), htons(addrclient.sin6_port));
+            pthread_t thread;
+            //*** le serveur cree un thread et passe un pointeur sur socket client à la fonction serve ***
+            if (pthread_create(&thread, NULL, serve, sock_client) == -1) {
+                perror("pthread_create");
+                continue;
+            }  
+            //*** affichage de l'adresse du client ***
+            char nom_dst[INET6_ADDRSTRLEN];
+            printf("client connecte : %s %d\n", inet_ntop(AF_INET6,&addrclient.sin6_addr,nom_dst,sizeof(nom_dst)), htons(addrclient.sin6_port));
         }
-
     }
     //*** fermeture socket serveur ***
     close(sock);
-    
     return 0;
 }  
