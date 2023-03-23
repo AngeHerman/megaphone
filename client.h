@@ -17,10 +17,18 @@ int demande_dernier_billets(int fd_sock,u_int16_t id_client,uint16_t numfil, uin
 /*Demande les n derniers billets de tous les fils*/
 int demande_dernier_billets_tous_les_fils(int sock,u_int16_t id_client,buf_t* buffer);
 
-int demande_inscription(int sock, char * pseudo);
+/**
+ * inscrit le client et renvoie l'id attribué par le serveur ou 0 en cas d'échec 
+*/
+uint16_t demande_inscription(int sock, char * pseudo);
 
-u_int16_t id_attribue(u_int16_t * mess_server);
-
-void test();
+/**
+ * véréfie que la réponse du serveur à l'inscription du client
+ * respecte le bon format et renvoie l'id attribué par le serveur
+ * 
+ * @param res tableau de 3 uint16_t contanant le message du serveur
+ * @return uint16_t l'id du client ou 0 en cas d'échec
+*/
+uint16_t reponse_inscription(u_int16_t * rep);
 
 #endif

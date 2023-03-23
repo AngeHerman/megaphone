@@ -19,11 +19,11 @@ int main(int argc, char** argv) {
   char hostname[SIZE_MESS];
   char port[SIZE_MESS];
   if (argc < 3) {
-      sprintf(hostname,"%s",DEFAULT_SERVER);
-      sprintf(port,"%s",DEFAULT_PORT);
+    sprintf(hostname,"%s",DEFAULT_SERVER);
+    sprintf(port,"%s",DEFAULT_PORT);
   }else{
-      sprintf(hostname,"%s",argv[1]);
-      sprintf(port,"%s",argv[2]);
+    sprintf(hostname,"%s",argv[1]);
+    sprintf(port,"%s",argv[2]);
   }
   struct sockaddr_in6* server_addr;
   int fdsock, adrlen;
@@ -37,7 +37,8 @@ int main(int argc, char** argv) {
       exit(1);
   }
   affiche_adresse(server_addr);
-  id_client = demande_inscription(fdsock, "aaaaaa");
+  if((id_client = demande_inscription(fdsock, "aaaaaa"))==0)
+    return 1;
   printf("id client est %d\n",id_client);
   close(fdsock);
   return 0;

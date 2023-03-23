@@ -105,9 +105,7 @@ int ajouter_billet(fil_t * fil, char * pseu, uint8_t len, char* text_billet){
 }
 
 int ajouter_billet_num(fils_t * fs,uint16_t num_f, char * pseu, uint8_t len, char* text_billet){
-    for(int i=0; i<fs->nb_fils; i++){
-        if(fs->fils[i].num_fil == num_f)
-            return ajouter_billet(fs->fils+i, pseu,len,text_billet);
-    }
-    return FALSE;
+    if(num_f>fs->nb_fils)//le fil n'existe pas
+        return FALSE;
+    return ajouter_billet(fs->fils+num_f-1, pseu,len,text_billet);
 }

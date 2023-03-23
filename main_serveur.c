@@ -17,42 +17,34 @@ fils_t * fils;
 void *serve(void *arg) {
     int sock = *((int *) arg);
     u_int16_t entete =lire_entete(sock);
-    if(entete == -1){
+    if(entete == 0){
         perror("erreur réception du message");
         return NULL;
     }
 
+    int *ret = malloc(sizeof(int));
+    int rep=0;
     /*recupération du codereq et verification du type de demande*/
     switch(get_code_req(entete)){
         /*demande d'inscription*/
         case 1: 
-            char * pseudo = lire_pseudo(sock);
-            uint16_t id = add_user(inscrits, pseudo);
-            if(id == 0 || id == -1){
-                if(id == 0)
-                    fprintf(stderr, "mémoire pleine");
-                if(id == -1)
-                    fprintf(stderr, "erreur malloc");
-                close(sock);
-                int *ret = malloc(sizeof(int));
-                *ret = 1;
-                pthread_exit(ret);
-            }
-            char * mess = message_server(1,id,0,0);
-
-            if(send(sock,mess,6,0) != 6){
-                perror("send");
-                free(mess);
-                close(sock);
-                int *ret = malloc(sizeof(int));
-                *ret = 1;
-                pthread_exit(ret);
-            }
-            free(mess);
+            int rep = inscrire_client(sock, inscrits);
+            break;
+        /*poster un billet*/
+        case 2:
+            int rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
             break;
     }
+    if(rep){//succès
+        *ret = 1;
+        close(sock);
+        pthread_exit(ret);
+    }
+    //envoyer le message d'erreur
+    envoie_message_erreur(sock);
+    *ret=0;
     close(sock);
-    return NULL;
+    pthread_exit(ret);
 }
 
 int main(int argc, char *argv[]){

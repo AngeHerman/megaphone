@@ -6,6 +6,8 @@
 #define TRUE 1
 #define FALSE 0
 
+#define LONG_INIT 10
+#define LEN_PSEUDO 10
 
 typedef struct inscrit_t{
     uint16_t id;
@@ -34,17 +36,17 @@ inscrits_t * creer_inscrits_t ();
  *  si le pseudo fait moins de 10 caractères 
  * @return uint16_t l'Id du client inscrit ou -1 en cas d'erreur malloc ou 0 si (nb_inscrits==2047 'plus de place')
  */
-uint16_t add_user(inscrits_t * ins, char * pseudo);
+int add_user(inscrits_t * ins, char * pseudo);
 
 /**
  * vérifie s'il existe un client parmi la liste des inscrit qui a comme id
- * `id`
+ * `id`, le cas echéant, met son pseudo dans pseu
  * 
  * @param ins liste des inscrits
  * @param id_client le id à chercher
  * @return TRUE s'il y a un client inscrit avec id `id`, FALSE sinon 
  */
-int est_inscrit(inscrits_t * ins, u_int16_t id_client);
+int est_inscrit(inscrits_t * ins, u_int16_t id_client, char * pseu);
 
 /**
  * libère la mémoire allouée pour stocker la liste des inscrits

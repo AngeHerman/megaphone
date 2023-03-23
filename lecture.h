@@ -24,6 +24,7 @@ buf_t * creer_buf_t (int size);
  */
 int read_msg(int sock,buf_t* buf);
 
+void free_buf(buf_t * buf);
 
 
 #endif

@@ -13,6 +13,7 @@ uint16_t entete_message(uint16_t code_req, uint16_t id){
     res+=code_req;
     id = id<<5;
     res+=id;
+    printf("%d\n", res);
     
     return htons(res);
 }
@@ -59,24 +60,7 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
   return res;
 }
 
-u_int16_t reponse_inscription(u_int16_t * rep){
-  uint8_t cod_req;
-  uint16_t id;
-  u_int16_t numfil = ntohs(rep[1]);
-  u_int16_t nb = ntohs(rep[2]);
-  u_int16_t entete = ntohs(rep[0]);
-  u_int16_t masque = 0b0000000000011111;
-  cod_req = entete & masque;
-  id = (entete & ~masque) >> 5;
 
-  if(cod_req!=1 || numfil!=0 || nb!=0){
-    fprintf(stderr, "message de confirmation d'inscription erroné\n");
-    return -1;
-  }
-  
-  printf("inscription réussie. ID attribué : %d\n", id);
-  return id;
-}
 
 
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){

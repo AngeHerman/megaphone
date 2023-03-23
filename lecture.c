@@ -37,3 +37,9 @@ int read_msg(int sock, buf_t* buf){
         return 0;
     return 1;
 }
+
+
+void free_buf(buf_t * buf){
+    free(buf->buf);
+    free(buf);
+}

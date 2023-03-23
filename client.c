@@ -11,9 +11,6 @@
 #include "buf.h"
 
 
-void test(){
-    printf("TEST\n");
-}
 
 void affiche_adresse(struct sockaddr_in6 *adr){
     char adr_buf[INET6_ADDRSTRLEN];
@@ -61,11 +58,11 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
   return 0;
 }
 
-int demande_inscription( int fd_sock, char * pseudo){
+uint16_t demande_inscription( int fd_sock, char * pseudo){
   char * mess_inscr = message_inscription_client(pseudo);
   
   if(send(fd_sock, mess_inscr,LEN_MESS_INSCR,0) != LEN_MESS_INSCR){
-    return -1;
+    return 0;
   } 
   free(mess_inscr);
  
@@ -74,9 +71,8 @@ int demande_inscription( int fd_sock, char * pseudo){
   int len = 0;
   if( (len = recv(fd_sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
     printf("%d\n", len);
-    return -1;
+    return 0;
   }
-  printf("la\n");
   uint16_t id = reponse_inscription(rep);
   return id;
 }
@@ -121,4 +117,23 @@ int demande_dernier_billets_tous_les_fils(int sock,u_int16_t id_client,buf_t* bu
   int result = demande_dernier_billets(sock,id_client,numfil,nb,buffer);
   return result;
 
+}
+
+u_int16_t reponse_inscription(u_int16_t * rep){
+  uint8_t cod_req;
+  uint16_t id;
+  u_int16_t numfil = ntohs(rep[1]);
+  u_int16_t nb = ntohs(rep[2]);
+  u_int16_t entete = ntohs(rep[0]);
+  u_int16_t masque = 0b0000000000011111;
+  cod_req = entete & masque;
+  id = (entete & ~masque) >> 5;
+
+  if(cod_req!=1 || numfil!=0 || nb!=0){
+    fprintf(stderr, "message de confirmation d'inscription erroné\n");
+    return 0;
+  }
+  
+  printf("inscription réussie. ID attribué : %d\n", id);
+  return id;
 }

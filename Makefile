@@ -21,4 +21,4 @@ inscrits.o : inscrits.c inscrits.h
 lecture.o : lecture.c lecture.h 
 	gcc -c lecture.c -o lecture.o
 clean : 
-	rm -rf test main_client main_serveur *.o
+	rm -rf  main_client main_serveur *.o

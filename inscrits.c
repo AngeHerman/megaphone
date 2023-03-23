@@ -5,8 +5,6 @@
 #include "inscrits.h"
 
 
-#define LONG_INIT 10
-#define LEN_PSEUDO 10
 
 inscrits_t * creer_inscrits_t (){
     inscrits_t * res = malloc(sizeof(inscrits_t));
@@ -25,7 +23,7 @@ inscrits_t * creer_inscrits_t (){
     return res;
 }
 
-uint16_t add_user(inscrits_t * ins,char * pseudo){
+int add_user(inscrits_t * ins,char * pseudo){
     if(ins->nb_inscrits == 2047){
         fprintf(stderr,"nombre max d'inscrits atteint");
         return 0;
@@ -52,10 +50,13 @@ uint16_t add_user(inscrits_t * ins,char * pseudo){
 }
 
 
-int est_inscrit(inscrits_t * ins, u_int16_t id_client){
+int est_inscrit(inscrits_t * ins, u_int16_t id_client, char * pseu){
     for(int i=0; i<ins->nb_inscrits; i++){
-        if(ins->inscrits[i].id == id_client)
+        if(ins->inscrits[i].id == id_client){
+            memmove(pseu, ins->inscrits[i].pseudo, LEN_PSEUDO);
+            pseu[LEN_PSEUDO]='\0';
             return TRUE;
+        }
     }
     return FALSE;
 }

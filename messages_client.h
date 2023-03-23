@@ -63,13 +63,7 @@ char * message_inscription_client(char * pseudo);
 char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb, uint8_t datalen, char * data);
 
 
-/**
- * véréfie que la réponse du serveur à l'inscription du client
- * respecte le bon format et renvoie l'id attribué par le serveur
- * 
- * @param res tableau de 3 uint16_t contanant le massage du serveur
-*/
-u_int16_t reponse_inscription(u_int16_t * rep);
+
 
 /**
  * @param id id du client
