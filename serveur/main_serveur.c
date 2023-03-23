@@ -12,7 +12,7 @@
 #include "fils.h"
 #include "serveur.h"
 #include "messages_serveur.h"
-#include "lecture.h"
+#include "../lecture.h"
 
 inscrits_t * inscrits;
 fils_t * fils;

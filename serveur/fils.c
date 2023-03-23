@@ -13,14 +13,14 @@
 
 
 fils_t * creer_list_fils(){
-    fils_t * res = malloc(sizeof(fils_t));
+    fils_t * res = (fils_t*) malloc(sizeof(fils_t));
     if(res == NULL){
         perror("malloc");
         return NULL;
     }
     memset(res,0,sizeof(fils_t));
     res->capacite = CAP_FILS_INIT;
-    res->fils = malloc(CAP_FILS_INIT * sizeof(fil_t));
+    res->fils = (fil_t *)malloc(CAP_FILS_INIT * sizeof(fil_t));
     if(res->fils == NULL){
         perror("malloc");
         free(res);
@@ -50,7 +50,7 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
     }
     //vérifier s'il la capacité est insuffisante
     if(fs->capacite == fs->nb_fils){
-        fil_t * tmp = realloc(fs, fs->capacite*2);
+        fil_t * tmp = (fil_t *)realloc(fs, fs->capacite*2);
         if(tmp==NULL){
             perror("realloc");
             return NULL;
@@ -64,7 +64,7 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
     f.origine[LEN_PSEUDO]='\0';
     f.nb_billets=0;
     f.capacite = CAP_FIL_INIT;
-    f.billets = malloc(CAP_FIL_INIT * sizeof(billet_t));
+    f.billets = (billet_t*) malloc(CAP_FIL_INIT * sizeof(billet_t));
     if(f.billets == NULL){
         perror("malloc");
         return NULL;
@@ -78,7 +78,7 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
 int ajouter_billet(fil_t * fil, char * pseu, uint8_t len, char* text_billet){
     //vérifier si la capacité du tableau de billet est insuffisante
     if(fil->capacite == fil->nb_billets){
-        billet_t * tmp = realloc(fil->billets, fil->capacite*2);
+        billet_t * tmp = (billet_t *)realloc(fil->billets, fil->capacite*2);
         if(tmp==NULL){
             perror("realloc");
             return FALSE;
@@ -90,7 +90,7 @@ int ajouter_billet(fil_t * fil, char * pseu, uint8_t len, char* text_billet){
     b.data_len = len;
     memmove(b.pseudo, pseu, LEN_PSEUDO);
     b.pseudo[LEN_PSEUDO] = '\0';
-    b.data = malloc(sizeof(char) * len + 1);
+    b.data = (char *)malloc(sizeof(char) * len + 1);
     if(b.data == NULL){
         perror("malloc");
         return FALSE;

@@ -1,30 +1,31 @@
-main_client : main_client.o messages_client.o client.o buf.o interaction.o
-	gcc main_client.o client.o messages_client.o buf.o interaction.o -o main_client 
-main_client.o : main_client.c client.h 
-	gcc -c main_client.c -o main_client.o
-client.o : client.c client.h messages_client.h
-	gcc -c client.c -o client.o
-interaction.o : interaction.c client.h interaction.h
-	gcc -c interaction.c -o interaction.o
-messages_client.o : messages_client.c messages_client.h
-	gcc -c messages_client.c -o messages_client.o
-buf.o : buf.c buf.h
-	gcc -c buf.c -o buf.o
+main_client : bin/main_client.o bin/messages_client.o bin/client.o bin/buf.o bin/interaction.o
+	gcc bin/main_client.o bin/client.o bin/messages_client.o bin/buf.o bin/interaction.o -o main_client 
+bin/main_client.o : client/main_client.c client/client.h 
+	gcc -c client/main_client.c -o bin/main_client.o
+bin/client.o : client/client.c client/client.h client/messages_client.h
+	gcc -c client/client.c -o bin/client.o
+bin/interaction.o : client/interaction.c client/client.h client/interaction.h
+	gcc -c client/interaction.c -o bin/interaction.o
+bin/messages_client.o : client/messages_client.c client/messages_client.h
+	gcc -c client/messages_client.c -o bin/messages_client.o
+bin/buf.o : client/buf.c client/buf.h
+	gcc -c client/buf.c -o bin/buf.o
 
-main_serveur : main_serveur.o messages_serveur.o serveur.o inscrits.o fils.o lecture.o
-	gcc main_serveur.o messages_serveur.o serveur.o inscrits.o fils.o lecture.o -pthread -o main_serveur
-main_serveur.o : main_serveur.c serveur.h lecture.h 
-	gcc -c main_serveur.c -o main_serveur.o
-serveur.o : serveur.c serveur.h lecture.h
-	gcc -c serveur.c -o serveur.o
-messages_serveur.o : messages_serveur.c messages_serveur.h
-	gcc -c messages_serveur.c -o messages_serveur.o
-fils.o : fils.c fils.h
-	gcc -c fils.c -o fils.o
-inscrits.o : inscrits.c inscrits.h
-	gcc -c inscrits.c -o inscrits.o
+main_serveur : bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o
+	gcc bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o -pthread -o main_serveur
+bin/main_serveur.o : serveur/main_serveur.c serveur/serveur.h lecture.h 
+	gcc -c serveur/main_serveur.c -o bin/main_serveur.o
+bin/serveur.o : serveur/serveur.c serveur/serveur.h lecture.h
+	gcc -c serveur/serveur.c -o bin/serveur.o
+bin/messages_serveur.o : serveur/messages_serveur.c serveur/messages_serveur.h
+	gcc -c serveur/messages_serveur.c -o bin/messages_serveur.o
+bin/fils.o : serveur/fils.c serveur/fils.h
+	gcc -c serveur/fils.c -o bin/fils.o
+bin/inscrits.o : serveur/inscrits.c serveur/inscrits.h
+	gcc -c serveur/inscrits.c -o bin/inscrits.o
 
-lecture.o : lecture.c lecture.h 
-	gcc -c lecture.c -o lecture.o
+bin/lecture.o : lecture.c lecture.h 
+	gcc -c lecture.c -o bin/lecture.o
+
 clean : 
-	rm -rf  main_client main_serveur *.o
+	rm -rf  main_client main_serveur bin/*.o

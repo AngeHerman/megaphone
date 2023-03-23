@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lecture.h"
+#include "../lecture.h"
 
 uint16_t entete_message(uint16_t code_req, uint16_t id){
     uint16_t res = 0;

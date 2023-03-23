@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 #include "serveur.h"
-#include "lecture.h"
+#include "../lecture.h"
 #include "inscrits.h"
 #include "fils.h"
 #include "messages_serveur.h"
