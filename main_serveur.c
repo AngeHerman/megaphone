@@ -6,10 +6,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+
+
 #include "inscrits.h"
 #include "fils.h"
 #include "serveur.h"
 #include "messages_serveur.h"
+#include "lecture.h"
 
 inscrits_t * inscrits;
 fils_t * fils;
@@ -22,17 +25,20 @@ void *serve(void *arg) {
         return NULL;
     }
 
-    int *ret = malloc(sizeof(int));
+    int *ret = (int *)malloc(sizeof(int));
     int rep=0;
     /*recupération du codereq et verification du type de demande*/
     switch(get_code_req(entete)){
         /*demande d'inscription*/
         case 1: 
-            int rep = inscrire_client(sock, inscrits);
+            rep = inscrire_client(sock, inscrits);
             break;
         /*poster un billet*/
         case 2:
-            int rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
+            rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
+            break;
+        case 3 :
+            rep = 0;
             break;
     }
     if(rep){//succès
@@ -96,12 +102,12 @@ int main(int argc, char *argv[]){
         socklen_t size=sizeof(addrclient);
         
         //*** on crée la varaiable sur le tas ***
-        int *sock_client = malloc(sizeof(int));
+        int *sock_client = (int*)malloc(sizeof(int));
 
         //*** le serveur accepte une connexion et initialise la socket de communication avec le client ***
         *sock_client = accept(sock, (struct sockaddr *) &addrclient, &size);
 
-        if (sock_client >= 0) {
+        if (*sock_client >= 0) {
             pthread_t thread;
             //*** le serveur cree un thread et passe un pointeur sur socket client à la fonction serve ***
             if (pthread_create(&thread, NULL, serve, sock_client) == -1) {

@@ -1,6 +1,8 @@
 #ifndef SERVEUR_H
 #define SERVEUR_H
 
+#include "inscrits.h"
+#include "fils.h"
 
 /**
  * @brief recoit les 2 premiers octects (l'entête)

@@ -18,7 +18,7 @@ uint16_t entete_message(uint16_t code_req, uint16_t id){
 }
 
 char * message_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb){
-    char * res = malloc(sizeof(char) * 6);
+    char * res = (char*)malloc(sizeof(char) * 6);
     if(res==NULL)
         return NULL;
     

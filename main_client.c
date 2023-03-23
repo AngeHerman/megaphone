@@ -7,11 +7,13 @@
 #include <sys/time.h>
 
 #include "client.h"
+#include "interaction.h"
 #include "buf.h"
 
 #define DEFAULT_SERVER "lulu"
 #define DEFAULT_PORT "7777"
 #define SIZE_MESS 100
+
 
 int main(int argc, char** argv) {
   uint16_t id_client = -1;
@@ -29,17 +31,22 @@ int main(int argc, char** argv) {
   int fdsock, adrlen;
 
   switch (get_server_addr(hostname,port, &fdsock, &server_addr, &adrlen)) {
-    case 0: printf("adresse creee !\n"); break;
+    case 0: 
+      printf("adresse creee !\n"); 
+      break;
     case -1:
       fprintf(stderr, "Erreur: hote non trouve.\n"); 
+      exit(1);
     case -2:
       fprintf(stderr, "Erreur: echec de creation de la socket.\n");
       exit(1);
   }
-  affiche_adresse(server_addr);
-  if((id_client = demande_inscription(fdsock, "aaaaaa"))==0)
-    return 1;
-  printf("id client est %d\n",id_client);
+
+  int ret=1;
+  //demander au client l'action voulue et l'exécuter
+  if(choix_client(fdsock))
+    ret = 0;
+
   close(fdsock);
-  return 0;
+  return ret;
 }

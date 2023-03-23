@@ -7,14 +7,14 @@
 
 
 inscrits_t * creer_inscrits_t (){
-    inscrits_t * res = malloc(sizeof(inscrits_t));
+    inscrits_t * res =(inscrits_t *) malloc(sizeof(inscrits_t));
     if(res==NULL){
         perror("malloc");
         return NULL;
     }
     memset(res,0,sizeof(inscrits_t));
     res->capacite = LONG_INIT;
-    res->inscrits = malloc(LONG_INIT * (sizeof(inscrit_t))); 
+    res->inscrits = (inscrit_t*)malloc(LONG_INIT * (sizeof(inscrit_t))); 
     if(res->inscrits==NULL){
         perror("malloc");
         free(res);
@@ -30,7 +30,7 @@ int add_user(inscrits_t * ins,char * pseudo){
     }
     //vérifier si le tableau est rempli
     if(ins->capacite == ins->nb_inscrits){
-        inscrit_t * tmp = realloc(ins->inscrits, 2*ins->capacite);
+        inscrit_t * tmp = (inscrit_t *)realloc(ins->inscrits, 2*ins->capacite);
         if(tmp==NULL){
             perror("realloc");
             return -1;

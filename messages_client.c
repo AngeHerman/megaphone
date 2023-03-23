@@ -13,13 +13,12 @@ uint16_t entete_message(uint16_t code_req, uint16_t id){
     res+=code_req;
     id = id<<5;
     res+=id;
-    printf("%d\n", res);
     
     return htons(res);
 }
 
 char * message_inscription_client(char * pseudo){
-    char * res = malloc(LEN_MESS_INSCR * sizeof(char));
+    char * res = (char *)malloc(LEN_MESS_INSCR * sizeof(char));
     if(res==NULL){
         perror("malloc");
         return NULL;
@@ -40,7 +39,7 @@ char * message_inscription_client(char * pseudo){
 
 char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb, uint8_t datalen, char * data){
   //7 octets + le nombre d'octets pour le texte du billet
-  char * res = malloc(7 + (datalen * sizeof(char)));
+  char * res = (char *)malloc(7 + (datalen * sizeof(char)));
   if(res == NULL){
     perror("malloc");
     return NULL;
@@ -54,7 +53,7 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
 
   //copier le texte du message
   if(datalen > 0){
-    memmove(res+7, data, strlen(data));    
+    memmove(res+7, data, datalen);    
   }
 
   return res;
