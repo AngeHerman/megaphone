@@ -183,7 +183,7 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
     u_int8_t datalen;
     u_int16_t numfilRet;
     u_int16_t nbRet = 0;
-    Boolean allFils = false;
+    int allFils = 0;
     if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
         return 0;
     }
@@ -191,11 +191,11 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
         return 0;
     }
     if(numfil==0){
-        allFils= true;
+        allFils= 1;
         numfilRet=filst->nb_fils;
         for(int i= 0;i<filst->nb_fils;i=i+1){
-            if(nb>(filst->fils[numfil-1]->nb_billets) || nb ==0){
-                nbRet = nbRet+filst->fils[numfil-1]->nb_billets;
+            if(nb>((filst->fils+numfil-1)->nb_billets) || nb ==0){
+                nbRet = nbRet+((filst->fils+numfil-1)->nb_billets);
             }
             else {
                 nbRet=nbRet+nb;
@@ -203,9 +203,9 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
         }
     }
     else if(numfil>0){
-        if((filst->fils[numfil-1]->nb_billets)>0){
-            if(nb>(filst->fils[numfil-1]->nb_billets) || nb ==0){
-                nbRet = filst->fils[numfil-1]->nb_billets;
+        if(((filst->fils+numfil-1)->nb_billets)>0){
+            if(nb>((filst->fils+numfil-1)->nb_billets) || nb ==0){
+                nbRet = (filst->fils+numfil-1)->nb_billets;
             }
             else {
                 nbRet = nb;
@@ -225,24 +225,24 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
         return 0;
     }
     free(mess);
-    if(allFils){
-        for(int filAct=1;j<=numfilRet;j=j+1){
-            for(int i=filst->fils[filAct-1]->nb_billets;i>0 && i>(filst->fils[filAct-1]->nb_billets)-nbRet;i=i-1){
-                billet_t billet_tmp = (filst->fils[filAct-1])->billets[i];
-                char * res = (char *)malloc(23+(billet_tmp->datalen * sizeof(char)));
+    if(allFils == 1){
+        for(int filAct=1;filAct<=numfilRet;filAct=filAct+1){
+            for(int i=(filst->fils+filAct-1)->nb_billets;i>0 && i>((filst->fils+filAct-1)->nb_billets)-nbRet;i=i-1){
+                billet_t * billet_tmp = (filst->fils+filAct-1)->billets+i;
+                char * res = (char *)malloc(23+(billet_tmp->data_len * sizeof(char)));
                 if(res==NULL){
                     perror("malloc");
-                    return NULL;
+                    return 0;
                 }
                 ((uint16_t *)res)[0] = htons(filAct);
-                unsigned int len_origine = strlen(filst->fils[filAct-1]->origine);
-                memmove(res+2,filst->fils[filAct-1]->origine,len_origine);
+                unsigned int len_origine = strlen((filst->fils+filAct-1)->origine);
+                memmove(res+2,(filst->fils+filAct-1)->origine,len_origine);
                 unsigned int len_pseudo = strlen(billet_tmp->pseudo);
                 memmove(res+12, billet_tmp->pseudo, len_pseudo);    
-                ((u_int8_t *)res)[23] = datalen;
+                ((u_int8_t *)res)[23] = billet_tmp->data_len;
                 //copier le texte du message
                 if(datalen > 0){
-                    memmove(res+23, billet_tmp->data, billet_tmp->datalen);    
+                    memmove(res+23, billet_tmp->data, billet_tmp->data_len);    
                 }
                 if (send(sock, res, sizeof(res), 0) != SIZE_MESS_SERV){
                     perror("send");
@@ -254,22 +254,22 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
         }
     }
     else {
-        for(int i=filst->fils[numfilRet-1]->nb_billets;i>0 && i>(filst->fils[numfilRet-1]->nb_billets)-nbRet;i=i-1){
-            billet_t billet_tmp = (filst->fils[numfilRet-1])->billets[i];
-            char * res = (char *)malloc(23+(billet_tmp->datalen * sizeof(char)));
+        for(int i=(filst->fils+numfilRet-1)->nb_billets;i>0 && i>((filst->fils+numfilRet-1)->nb_billets)-nbRet;i=i-1){
+            billet_t * billet_tmp = (filst->fils+numfilRet-1)->billets+i;
+            char * res = (char *)malloc(23+(billet_tmp->data_len * sizeof(char)));
             if(res==NULL){
                 perror("malloc");
-                return NULL;
+                return 0;
             }
             ((uint16_t *)res)[0] = htons(numfilRet);
-            unsigned int len_origine = strlen(filst->fils[numfilRet-1]->origine);
-            memmove(res+2,filst->fils[numfilRet-1]->origine,len_origine);
+            unsigned int len_origine = strlen((filst->fils+numfilRet-1)->origine);
+            memmove(res+2,(filst->fils+numfilRet-1)->origine,len_origine);
             unsigned int len_pseudo = strlen(billet_tmp->pseudo);
             memmove(res+12, billet_tmp->pseudo, len_pseudo);    
-            ((u_int8_t *)res)[23] = datalen;
+            ((u_int8_t *)res)[23] = billet_tmp->data_len;
             //copier le texte du message
             if(datalen > 0){
-                memmove(res+23, billet_tmp->data, billet_tmp->datalen);    
+                memmove(res+23, billet_tmp->data, billet_tmp->data_len);    
             }
             if (send(sock, res, sizeof(res), 0) != SIZE_MESS_SERV){
                 perror("send");

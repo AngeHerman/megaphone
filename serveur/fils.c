@@ -109,5 +109,3 @@ int ajouter_billet_num(fils_t * fs,uint16_t num_f, char * pseu, uint8_t len, cha
         return FALSE;
     return ajouter_billet(fs->fils+num_f-1, pseu,len,text_billet);
 }
-
-billet_t 
