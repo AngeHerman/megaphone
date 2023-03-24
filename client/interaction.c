@@ -14,7 +14,7 @@
 int inscrire_client(int sock){
     char pseudo[11];
     memset(pseudo, '#', 10);
-    printf("Entrez votre pseudo (entre 1 et 10 caractères :\n");
+    printf("Entrez votre pseudo (entre 1 et 10 caractères) :\n");
     scanf("%s", pseudo);
     pseudo[10] = '\0';
 
@@ -31,13 +31,21 @@ int poster_billet(int sock){
     int id;
     int numfil;
     uint8_t datalen;
-    char texte[256]={0};
+    char texte[255+1];
+    memset(texte,0,sizeof(texte));
+    char temp[255+1+1];
+    memset(temp,0,sizeof(temp));
+    char nb[7]={0};
     printf("Entrez votre id :\n");
-    scanf("%d", &id);
+    fgets(nb,7,stdin);
+    id = atoi(nb);
+    memset(nb,0,sizeof(nb));
     printf("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
-    scanf("%d", &numfil);
+    fgets(nb,7,stdin);
+    numfil = atoi(nb);
     printf("Entrez le texte du billet :\n");
-    scanf("%s", texte);
+    fgets(temp, 257, stdin);
+    memmove(texte,temp,strlen(temp)-1);//enlever le '\n'
     datalen = strlen(texte);
     
     uint16_t res = poster_un_billet(sock, id, numfil, datalen, texte);
@@ -59,7 +67,9 @@ int choix_client(int sock){
   char offre_demande_billets[] = "Tapez 3 pour demander la liste des derniers billets sur un fil\n";
   printf("%s%s%s", offre_inscription, offre_poster_billet, offre_demande_billets);
   int rep_client;
-  scanf("%d", &rep_client);
+  char rep_s[3] = {0};
+  fgets(rep_s, 3, stdin);
+  rep_client = atoi(rep_s);
   switch (rep_client){
     case 1:
       return inscrire_client(sock);
@@ -71,4 +81,5 @@ int choix_client(int sock){
       fprintf(stderr,"Opération pas prise en charge\n");
       break;
   }
+  return 0;
 }

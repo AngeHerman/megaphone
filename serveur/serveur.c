@@ -141,24 +141,24 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
 {
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
-        printf("%d_n",id);
         return 0;
     }
     u_int16_t numfil;
     u_int16_t nb;
     u_int8_t datalen;
-    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
+    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen))
         return 0;
-    }
-    if (nb != 0){ // nb doit être 0 dans le message client
+    if (nb != 0) // nb doit être 0 dans le message client
         return 0;
-    }
+    if(datalen == 0)
+        return 0;
     char data[datalen + 1];
     memset(data, 0, sizeof(data));
     if (!lire_data(sock, datalen, data)){ // on met le texte du billet dans data
         return 0;
     }
     // ajouter le billet
+    printf("datalen : %d, data :%s\n", datalen, data);
     if (numfil == 0)
     { // on ajoute le billet dans un nouveau fil
         fil_t *fil = ajouter_nouveau_fil(fils, pseudo);

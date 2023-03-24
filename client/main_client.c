@@ -16,8 +16,6 @@
 
 
 int main(int argc, char** argv) {
-  uint16_t id_client = -1;
-
   char hostname[SIZE_MESS];
   char port[SIZE_MESS];
   if (argc < 3) {

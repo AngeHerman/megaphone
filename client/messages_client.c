@@ -29,7 +29,7 @@ char * message_inscription_client(char * pseudo){
     unsigned int len_pseudo = strlen(pseudo);
     memmove(res+2, pseudo, len_pseudo);    
     /*compléter par des '#' si pseudo n'a pas 10 caractères*/
-    for(int i=0; i<LEN_PSEUDO-len_pseudo; i++){
+    for(unsigned int i=0; i<LEN_PSEUDO-len_pseudo; i++){
         res[2+len_pseudo+i] = '#';
     }
 
@@ -65,7 +65,8 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
   uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;
   uint8_t datalen = 0;
-  return message_client(code_req,id,numfil,nb,datalen,"");
+  char data[]="";
+  return message_client(code_req,id,numfil,nb,datalen,data);
 }
 
 u_int16_t reponse_derniers_billets(u_int16_t * rep){
