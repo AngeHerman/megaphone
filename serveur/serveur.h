@@ -39,4 +39,6 @@ void envoie_message_erreur(int sock);
 */
 int poster_un_billet(int sock,inscrits_t * inscrits,fils_t * fils, uint16_t id);
 
+int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t id);
+
 #endif

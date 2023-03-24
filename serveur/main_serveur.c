@@ -37,8 +37,9 @@ void *serve(void *arg) {
         case 2:
             rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
             break;
+        /*derniers n billets d'un fil*/
         case 3 :
-            rep = 0;
+            rep = demander_des_billets(sock,inscrits,fils,get_id_requete(entete));
             break;
     }
     if(rep){//succès
@@ -54,6 +55,12 @@ void *serve(void *arg) {
 }
 
 int main(int argc, char *argv[]){
+
+    if(argc<2){
+        fprintf(stderr, "Usage : %s <num_port>\n", argv[0]);
+        exit(1);
+    }
+
     /*Creation liste d'inscrits*/
     inscrits = creer_inscrits_t();
     /*Création liste de fils*/

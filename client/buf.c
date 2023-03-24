@@ -9,7 +9,7 @@
 #include "buf.h"
 
 buf_t * creer_buf_t (){
-    buf_t * res = malloc(sizeof(buf_t));
+    buf_t * res = (buf_t*)malloc(sizeof(buf_t));
     if(res==NULL){
         perror("malloc");
         return NULL;
@@ -17,13 +17,13 @@ buf_t * creer_buf_t (){
     memset(res,0,sizeof(buf_t));
     res->cur = 0;
     res->size = 0;
-    res->buf = malloc((SIZE_BUF +1) * (sizeof(char))); 
+    res->buf = (char*)malloc((SIZE_BUF +1) * (sizeof(char))); 
     if(res->buf==NULL){
         perror("malloc");
         free(res);
         return NULL;
     }
-    memset(res->buf, 0, sizeof(res->buf));
+    memset(res->buf, 0, SIZE_BUF+1);
     return res;
 }
 

@@ -8,20 +8,20 @@
 #include "lecture.h"
 
 buf_t * creer_buf_t (int size){
-    buf_t * res = malloc(sizeof(buf_t));
+    buf_t * res =(buf_t*) malloc(sizeof(buf_t));
     if(res==NULL){
         perror("malloc");
         return NULL;
     }
     res->current = 0;
     res->expected_size = size;
-    res->buf = malloc(res->expected_size * (sizeof(char))); 
+    res->buf = (char*)malloc(res->expected_size * (sizeof(char))); 
     if(res->buf==NULL){
         perror("malloc");
         free(res);
         return NULL;
     }
-    memset(res->buf, 0, sizeof(res->buf));
+    memset(res->buf, 0, res->expected_size);
     return res;
 }
 
