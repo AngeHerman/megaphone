@@ -30,9 +30,13 @@ int read_msg(int sock, buf_t* buf){
     int size_recv=0;
     
     while(((size_recv = recv(sock, buf->buf+buf->current, buf->expected_size-buf->current, 0)) < buf->expected_size - buf->current) && size_recv>0 ){
+        printf("Avant current %d et fin %d et sizerecv est %d\n",buf->current,buf->expected_size,size_recv);
         buf->current += size_recv;
+        printf("Now current %d et fin %d\n",buf->current,buf->expected_size);
+
     }
     buf->current += size_recv;
+    printf("current %d et fin %d",buf->current,buf->expected_size);
     if(buf->current!=buf->expected_size)
         return 0;
     return 1;

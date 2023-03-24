@@ -203,6 +203,8 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
         }
     }
     else if(numfil>0){
+        numfilRet = numfil;
+        printf("numfil %u nbbillets %u\n",(filst->fils+numfil)->num_fil,(filst->fils+numfil)->nb_billets);
         if(((filst->fils+numfil-1)->nb_billets)>0){
             if(nb>((filst->fils+numfil-1)->nb_billets) || nb ==0){
                 nbRet = (filst->fils+numfil-1)->nb_billets;
@@ -212,10 +214,12 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
             }
         }
         else {
+            printf("ICI mais nb est %d\n",nb);
             nbRet = 0;
         }
     }
-    char *mess = message_server(2, id, numfilRet, nbRet);
+    printf("-----------numfilret est %u\n",numfilRet);
+    char *mess = message_server(3, id, numfilRet, nbRet);
     if (!mess){
         return 0;
     }
@@ -239,7 +243,7 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
                 memmove(res+2,(filst->fils+filAct-1)->origine,len_origine);
                 unsigned int len_pseudo = strlen(billet_tmp->pseudo);
                 memmove(res+12, billet_tmp->pseudo, len_pseudo);    
-                ((u_int8_t *)res)[23] = billet_tmp->data_len;
+                ((u_int8_t *)res)[22] = billet_tmp->data_len;
                 //copier le texte du message
                 if(datalen > 0){
                     memmove(res+23, billet_tmp->data, billet_tmp->data_len);    
@@ -266,7 +270,7 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
             memmove(res+2,(filst->fils+numfilRet-1)->origine,len_origine);
             unsigned int len_pseudo = strlen(billet_tmp->pseudo);
             memmove(res+12, billet_tmp->pseudo, len_pseudo);    
-            ((u_int8_t *)res)[23] = billet_tmp->data_len;
+            ((u_int8_t *)res)[22] = billet_tmp->data_len;
             //copier le texte du message
             if(datalen > 0){
                 memmove(res+23, billet_tmp->data, billet_tmp->data_len);    

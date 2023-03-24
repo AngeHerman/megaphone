@@ -73,29 +73,38 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
   int taille = 0;
   if((taille = recv(sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
     printf("Taille est %d\n",taille);
-    return -1;
+    return 0;
   }
 
   uint16_t nbb = reponse_derniers_billets(rep);
+  printf("nbb est %u\n",nbb);
 
   for(int i = 0; i < nbb; i++){
     buf_t *buf = creer_buf_t(NB_OCTECS_DERNIERS_MESSAGE_JUSQUA_DATALEN);
-    if (buf == NULL)
-        return 0;
+    if (buf == NULL){
+      printf("Error buf 1\n");
+      return 0;
+    }
+        
     int r = read_msg(sock, buf);
     if (r == 0)
     {
+        printf("Error read 1\n");
         free(buf);
         return 0;
     }
     uint8_t datalen = reponse_derniers_billets_datalen(buf->buf);
     
     buf_t *buf2 = creer_buf_t(datalen);
-    if (buf2 == NULL)
-        return 0;
+    if (buf2 == NULL){
+      printf("Error buf 2\n");
+      return 0;
+    }
     r = read_msg(sock, buf2);
     if (r == 0)
     {
+        printf("Error read 2\n");
+
         free(buf2);
         return 0;
     }
