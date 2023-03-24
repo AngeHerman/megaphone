@@ -1,5 +1,5 @@
-main_client : bin/main_client.o bin/messages_client.o bin/client.o bin/buf.o bin/interaction.o
-	gcc bin/main_client.o bin/client.o bin/messages_client.o bin/buf.o bin/interaction.o -o main_client 
+main_client : bin/main_client.o bin/messages_client.o bin/client.o bin/interaction.o bin/lecture.o
+	gcc bin/main_client.o bin/client.o bin/messages_client.o bin/interaction.o bin/lecture.o -o main_client 
 bin/main_client.o : client/main_client.c client/client.h 
 	gcc -c client/main_client.c -o bin/main_client.o
 bin/client.o : client/client.c client/client.h client/messages_client.h
@@ -8,8 +8,6 @@ bin/interaction.o : client/interaction.c client/client.h client/interaction.h
 	gcc -c client/interaction.c -o bin/interaction.o
 bin/messages_client.o : client/messages_client.c client/messages_client.h
 	gcc -c client/messages_client.c -o bin/messages_client.o
-bin/buf.o : client/buf.c client/buf.h
-	gcc -c client/buf.c -o bin/buf.o
 
 main_serveur : bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o
 	gcc bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o -pthread -o main_serveur

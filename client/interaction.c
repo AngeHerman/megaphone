@@ -50,7 +50,24 @@ int poster_billet(int sock){
 }
 
 int demader_billets(int sock){
-    return 0;
+    int id;
+    int numfil;
+    int nb;
+    char texte[256]={0};
+    printf("Entrez votre id :\n");
+    scanf("%d", &id);
+    printf("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
+    scanf("%d", &numfil);
+    printf("Entrez le nombre de billet voulu :\n");
+    scanf("%d", &nb);
+    
+    int res = demande_dernier_billets(sock, id, numfil, nb);
+    if(res==0){
+        fprintf(stderr,"La demande a échouée\n");
+        return 0;
+    }
+    printf("Demande réussi %u\n", res);
+    return 1;
 }
 
 int choix_client(int sock){

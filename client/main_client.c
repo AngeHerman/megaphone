@@ -8,7 +8,6 @@
 
 #include "client.h"
 #include "interaction.h"
-#include "buf.h"
 
 #define DEFAULT_SERVER "lulu"
 #define DEFAULT_PORT "7777"
