@@ -37,8 +37,9 @@ void *serve(void *arg) {
         case 2:
             rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
             break;
+        /*derniers n billets d'un fil*/
         case 3 :
-            rep = 0;
+            rep = demander_des_billets(sock,inscrits,fils,get_id_requete(entete));
             break;
     }
     if(rep){//succès
