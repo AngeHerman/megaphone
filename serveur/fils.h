@@ -77,5 +77,19 @@ int ajouter_billet(fil_t * fil, char * pseu, uint8_t len, char* text_billet);
 int ajouter_billet_num(fils_t* fs, uint16_t num_f, char * pseu, uint8_t len, char* text_billet);
 
 
+/**
+ * @brief Get the messages object
+ * 
+ * @param fils la liste de fils
+ * @param numfil le numéro de fil ou =0 pour demander des messages sur tous les fils
+ * @param nb nombre de messages voulu ou =0 pour demander tous les messages 
+ * @param messages[out] la liste de messages à envoyer au client
+ * @param numfil_rep[out] numfil si numfil>0 sinon il vaut le nb de fils en cours dans la réponse 
+ * @param nb_rep[out] nombre de messages à envoyer
+ * @return int 1 en cas de succès; 0 en cas d'échec 
+ */
+int get_messages(fils_t * fils, uint16_t numfil, uint16_t nb, char*** messages, uint16_t* numfil_rep, uint16_t* nb_rep);
 
+
+void free_messages_billets(char** messages, uint16_t nb_mess);
 #endif

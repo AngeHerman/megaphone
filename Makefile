@@ -17,7 +17,7 @@ bin/serveur.o : serveur/serveur.c serveur/serveur.h lecture.h
 	gcc -c serveur/serveur.c -o bin/serveur.o
 bin/messages_serveur.o : serveur/messages_serveur.c serveur/messages_serveur.h
 	gcc -c serveur/messages_serveur.c -o bin/messages_serveur.o
-bin/fils.o : serveur/fils.c serveur/fils.h
+bin/fils.o : serveur/fils.c serveur/fils.h serveur/messages_serveur.h
 	gcc -c serveur/fils.c -o bin/fils.o
 bin/inscrits.o : serveur/inscrits.c serveur/inscrits.h
 	gcc -c serveur/inscrits.c -o bin/inscrits.o

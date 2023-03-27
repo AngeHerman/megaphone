@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../lecture.h"
+#include "messages_serveur.h"
 
 uint16_t entete_message(uint16_t code_req, uint16_t id){
     uint16_t res = 0;
@@ -31,6 +31,17 @@ char * message_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
     return res;
 }
 
+char * message_billet(uint16_t numfil, char* origine, char* pseudo, uint8_t datalen, char* data){
+    char * res = (char*)malloc(sizeof(char) * (23+datalen));
+    if(res==NULL)
+        return NULL;
+    ((uint16_t *)res)[0] = htons(numfil);
+    memmove(res+2, origine, LEN_PSEUDO);
+    memmove(res+2+LEN_PSEUDO, pseudo, LEN_PSEUDO);
+    memmove(res+2+(2*LEN_PSEUDO), &datalen , 1);
+    memmove(res+23, data, datalen);
+    return res;
+}
 
 
 uint8_t get_code_req(uint16_t entete){

@@ -173,6 +173,33 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
     return confirmer_ajout_billet(sock, numfil, id);
 }
 
+//réponse à la demande des billets
+
+int annoncer_envoi_billets(int sock, uint16_t numfil, uint16_t nb, uint8_t id){
+    char *mess = message_server(3, id, numfil, nb);
+    if (!mess)
+        return 0;
+    if (send(sock, mess, SIZE_MESS_SERV, 0) != SIZE_MESS_SERV)
+    {
+        free(mess);
+        return 0;
+    }
+    free(mess);
+    return 1;
+}
+
+uint8_t get_datalen(char* message){
+    return (uint8_t)message[2+(2*LEN_PSEUDO)];
+}
+
+int envoyer_billets(int sock, char** messages, uint16_t nb_rep){
+    for(int i=0; i<nb_rep; i++){
+        if(send(sock,messages[i], 23+get_datalen(messages[i]) ,0) != 23+get_datalen(messages[i]))
+            return 0;
+    }   
+    return 1;
+}
+
 int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t id){
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
@@ -181,107 +208,27 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
     u_int16_t numfil;
     u_int16_t nb;
     u_int8_t datalen;
-    u_int16_t numfilRet;
-    u_int16_t nbRet = 0;
-    int allFils = 0;
     if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
         return 0;
     }
     if(datalen!=0){
         return 0;
     }
-    if(numfil==0){
-        allFils= 1;
-        numfilRet=filst->nb_fils;
-        for(int i= 0;i<filst->nb_fils;i=i+1){
-            if(nb>((filst->fils+numfil-1)->nb_billets) || nb ==0){
-                nbRet = nbRet+((filst->fils+numfil-1)->nb_billets);
-            }
-            else {
-                nbRet=nbRet+nb;
-            }
-        }
-    }
-    else if(numfil>0){
-        numfilRet = numfil;
-        printf("numfil %u nbbillets %u\n",(filst->fils+numfil)->num_fil,(filst->fils+numfil)->nb_billets);
-        if(((filst->fils+numfil-1)->nb_billets)>0){
-            if(nb>((filst->fils+numfil-1)->nb_billets) || nb ==0){
-                nbRet = (filst->fils+numfil-1)->nb_billets;
-            }
-            else {
-                nbRet = nb;
-            }
-        }
-        else {
-            printf("ICI mais nb est %d\n",nb);
-            nbRet = 0;
-        }
-    }
-    printf("-----------numfilret est %u\n",numfilRet);
-    char *mess = message_server(3, id, numfilRet, nbRet);
-    if (!mess){
+
+    char** messages = NULL;
+    uint16_t numfil_rep;
+    uint16_t nb_rep;
+
+    if(!get_messages(filst,numfil,nb, &messages, &numfil_rep, &nb_rep))
+        return 0;
+    if(!annoncer_envoi_billets(sock,numfil_rep,nb_rep,id)){
+        free_messages_billets(messages,nb_rep);
         return 0;
     }
-    if (send(sock, mess, SIZE_MESS_SERV, 0) != SIZE_MESS_SERV){
-        perror("send");
-        free(mess);
+    if(!envoyer_billets(sock,messages,nb_rep)){
+        free_messages_billets(messages,nb_rep);
         return 0;
     }
-    free(mess);
-    if(allFils == 1){
-        for(int filAct=1;filAct<=numfilRet;filAct=filAct+1){
-            for(int i=(filst->fils+filAct-1)->nb_billets;i>0 && i>((filst->fils+filAct-1)->nb_billets)-nbRet;i=i-1){
-                billet_t * billet_tmp = (filst->fils+filAct-1)->billets+i;
-                char * res = (char *)malloc(23+(billet_tmp->data_len * sizeof(char)));
-                if(res==NULL){
-                    perror("malloc");
-                    return 0;
-                }
-                ((uint16_t *)res)[0] = htons(filAct);
-                unsigned int len_origine = strlen((filst->fils+filAct-1)->origine);
-                memmove(res+2,(filst->fils+filAct-1)->origine,len_origine);
-                unsigned int len_pseudo = strlen(billet_tmp->pseudo);
-                memmove(res+12, billet_tmp->pseudo, len_pseudo);    
-                ((u_int8_t *)res)[22] = billet_tmp->data_len;
-                //copier le texte du message
-                if(datalen > 0){
-                    memmove(res+23, billet_tmp->data, billet_tmp->data_len);    
-                }
-                if (send(sock, res, sizeof(res), 0) != SIZE_MESS_SERV){
-                    perror("send");
-                    free(mess);
-                    return 0;
-                }
-                free(res);
-            }
-        }
-    }
-    else {
-        for(int i=(filst->fils+numfilRet-1)->nb_billets;i>0 && i>((filst->fils+numfilRet-1)->nb_billets)-nbRet;i=i-1){
-            billet_t * billet_tmp = (filst->fils+numfilRet-1)->billets+i;
-            char * res = (char *)malloc(23+(billet_tmp->data_len * sizeof(char)));
-            if(res==NULL){
-                perror("malloc");
-                return 0;
-            }
-            ((uint16_t *)res)[0] = htons(numfilRet);
-            unsigned int len_origine = strlen((filst->fils+numfilRet-1)->origine);
-            memmove(res+2,(filst->fils+numfilRet-1)->origine,len_origine);
-            unsigned int len_pseudo = strlen(billet_tmp->pseudo);
-            memmove(res+12, billet_tmp->pseudo, len_pseudo);    
-            ((u_int8_t *)res)[22] = billet_tmp->data_len;
-            //copier le texte du message
-            if(datalen > 0){
-                memmove(res+23, billet_tmp->data, billet_tmp->data_len);    
-            }
-            if (send(sock, res, sizeof(res), 0) != SIZE_MESS_SERV){
-                perror("send");
-                free(mess);
-                return 0;
-            }
-            free(res);
-        }
-    }
+    free_messages_billets(messages,nb_rep);
     return 1;
 }
