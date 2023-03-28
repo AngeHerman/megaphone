@@ -72,12 +72,12 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
   u_int16_t rep[3];
   int taille = 0;
   if((taille = recv(sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
-    printf("Taille est %d\n",taille);
+    printf("Taille recv est %d\n",taille);
     return 0;
   }
 
   uint16_t nbb = reponse_derniers_billets(rep);
-  printf("nbb est %u\n",nbb);
+  printf("Il ya exactement %u messages qui arrivent\n",nbb);
 
   for(int i = 0; i < nbb; i++){
     buf_t *buf = creer_buf_t(NB_OCTECS_DERNIERS_MESSAGE_JUSQUA_DATALEN);
@@ -108,7 +108,11 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
         free(buf2);
         return 0;
     }
-    printf("Message %d :\n%s\n",i,buf2->buf);
+    char message[datalen + 1];
+    memset(message,0,datalen+1);
+    memmove(message,buf2->buf,datalen);
+    printf("Message %d : %s\n",i+1,message);
+    printf("-------------------------------\n");
     free_buf(buf);
     free_buf(buf2);
     

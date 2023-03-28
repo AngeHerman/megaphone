@@ -74,7 +74,7 @@ int demader_billets(int sock){
         fprintf(stderr,"La demande a échouée\n");
         return 0;
     }
-    printf("Demande réussi %u\n", res);
+    // printf("Demande réussi %u\n", res);
     return 1;
 }
 
