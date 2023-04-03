@@ -69,6 +69,14 @@ char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
   return message_client(code_req,id,numfil,nb,datalen,data);
 }
 
+char * message_abonnement_fil(uint16_t id, uint16_t numfil){
+  uint16_t code_req = CODE_REQ_ABONNEMENT_FIL;
+  uint8_t datalen = 0;
+  uint16_t nb = 0;
+  char data[]="";
+  return message_client(code_req,id,numfil,nb,datalen,data);
+}
+
 u_int16_t reponse_derniers_billets(u_int16_t * rep){
   uint8_t cod_req;
   uint16_t id;
@@ -102,4 +110,8 @@ u_int8_t reponse_derniers_billets_datalen(char* rep){
   printf("Pseudo : %s\n",pseudo);
   uint8_t datalen = ((uint8_t *)rep)[22];
   return datalen;
+}
+
+int reponse_abonnement(char *rep){
+  
 }

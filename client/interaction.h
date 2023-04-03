@@ -23,4 +23,19 @@ int inscrire_client(int sock);
 */
 int poster_billet(int sock);
 
+/**
+ * @return int 1 en cas de succès, et 0 en cas d'échec
+*/
+int abonnement_fil(int sock);
+
+/**
+ * @return int 1 en cas de succès, et 0 en cas d'échec
+*/
+int ajouter_fichier(int sock);
+
+/**
+ * @return int 1 en cas de succès, et 0 en cas d'échec
+*/
+int telecharger_fichier(int sock);
+
 #endif

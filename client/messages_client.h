@@ -5,9 +5,14 @@
 
 #define LEN_PSEUDO 10
 #define LEN_MESS_INSCR 12 //entête de deux octets + 10 octets pour le pseudo
-#define LEN_MESS_DMD_BILLETS 7// entête de deux octets + 2 octets numfil + 2 octets nb + 1 octet datalen
+#define LEN_MESS_CLIENT 7// entête de deux octets + 2 octets numfil + 2 octets nb + 1 octet datalen
 
 #define CODE_REQ_DEMANDE_BILLETS 3 //code_req pour la demande des billets
+#define CODE_REQ_ABONNEMENT_FIL 4 //code_req pour l'abonnement à un
+#define CODE_REQ_AJOUT_FICHIER 5 //code_req pour l'ajout de fichier
+#define CODE_REQ_TELECHARGER_FICHIER 6 //code_req pour le telechargement de fichier
+
+
 
 /**
  * client : 
@@ -87,6 +92,21 @@ u_int16_t reponse_derniers_billets(u_int16_t * rep);
  * @return datalen la taille du message qui arrive
 */
 u_int8_t reponse_derniers_billets_datalen(char* rep);
+
+/**
+ * @param id id du client
+ * @param numfil numéro de fil
+ * 
+ * @return le message du client au bon format
+*/
+char * message_abonnement_fil(uint16_t id, uint16_t numfil);
+
+/**
+ * @param rep la reponse du serveur à décoder
+ * 
+ * @return l'adresse d'abonnement envoyé par le serveur
+*/
+int reponse_abonnement(char *rep);
 
 
 

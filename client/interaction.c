@@ -61,7 +61,6 @@ int demader_billets(int sock){
     int id;
     int numfil;
     int nb;
-    char texte[256]={0};
     printf("Entrez votre id :\n");
     scanf("%d", &id);
     printf("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
@@ -76,6 +75,26 @@ int demader_billets(int sock){
     }
     // printf("Demande réussi %u\n", res);
     return 1;
+}
+
+int abonnement_fil(int sock){
+  int id;
+  int numfil;
+  char texte[256]={0};
+  printf("Entrez votre id :\n");
+  scanf("%d", &id);
+  printf("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
+  scanf("%d", &numfil);
+
+
+}
+
+int ajouter_fichier(int sock){
+
+}
+
+int telecharger_fichier(int sock){
+
 }
 
 int choix_client(int sock){

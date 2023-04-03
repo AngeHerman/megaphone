@@ -3,6 +3,8 @@
 #include <arpa/inet.h>
 
 #define NB_OCTECS_DERNIERS_MESSAGE_JUSQUA_DATALEN 23 //Numfil (2 otects)+origine(10)+pseudo(10)+datalen(1)
+#define NB_OCTECS_REPONSES_ABONNEMENT 22//code_req et ID (2 otects)+Numfil (2 otects)+nb (2) + adresse(16)
+
 
 /* Affiche l'adresse du server ainsi que le port sur le client s'est connecté */
 void affiche_adresse(struct sockaddr_in6 *adr);
@@ -33,6 +35,11 @@ uint16_t reponse_inscription(uint16_t * rep);
 */
 uint16_t poster_un_billet(int sock, uint16_t id, uint16_t num_fil, uint8_t datalen, char * data);
 
+/**
+ * abonne le client au fil numfil
+ * @return 0 en cas d'échec, le numéro du fil sur lequel le billet a été posté sinon
+*/
+int demande_abonnement(int sock,u_int16_t id_client,uint16_t numfil);
 
 
 #endif

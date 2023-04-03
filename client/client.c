@@ -62,7 +62,7 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
 int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16_t nb){
 
   char * mess_dernier_billets = message_dernier_billets(id_client,numfil,nb);
-  if(send(sock, mess_dernier_billets,LEN_MESS_DMD_BILLETS,0) != LEN_MESS_DMD_BILLETS){
+  if(send(sock, mess_dernier_billets,LEN_MESS_CLIENT,0) != LEN_MESS_CLIENT){
     free(mess_dernier_billets);
     return 0;
   } 
@@ -118,6 +118,29 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
     
   }
   return 1;
+}
+
+int demande_abonnement(int sock,u_int16_t id_client,uint16_t numfil){
+  char * mess_abonnement_fil = message_abonnement_fil(id_client,numfil);
+  if(send(sock, mess_abonnement_fil,LEN_MESS_CLIENT,0) != LEN_MESS_CLIENT){
+    free(mess_abonnement_fil);
+    return 0;
+  } 
+  free(mess_abonnement_fil);
+  buf_t *buf = creer_buf_t(NB_OCTECS_REPONSES_ABONNEMENT);
+  if (buf == NULL){
+    printf("Error buf\n");
+    return 0;
+  }
+
+  int r = read_msg(sock, buf);
+  if (r == 0)
+  {
+    printf("Error read\n");
+    free(buf);
+    return 0;
+  }
+
 }
 
 //fonctions pour inscrire un client
