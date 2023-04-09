@@ -168,7 +168,8 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
         return confirmer_ajout_billet(sock, fil->num_fil, id);
     }
     // on ajoute le billet dans le fil numfil
-    ajouter_billet_num(fils, numfil, pseudo, datalen, data);
+    if(!ajouter_billet_num(fils, numfil, pseudo, datalen, data))
+        return 0;
 
     return confirmer_ajout_billet(sock, numfil, id);
 }

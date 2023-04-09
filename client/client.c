@@ -198,7 +198,7 @@ uint16_t reponse_poster_billet(uint16_t * rep){
     return 0;
 
   if(cod_req!=2 || nb!=0){
-    fprintf(stderr, "message de confirmation d'inscription erroné\n");
+    fprintf(stderr, "message de confirmation erroné\n");
     return 0;
   }
   

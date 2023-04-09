@@ -157,8 +157,8 @@ int get_messages_fil(fils_t * fils, char**messages, int ind_comm, uint16_t numfi
         i = fil.nb_billets - nb;
     }
     for(; i<fil.nb_billets; i++){
-        messages[ind_comm+i] = message_billet(numfil,fil.origine,fil.billets[i].pseudo,fil.billets[i].data_len, fil.billets[i].data);
-        if(!messages[ind_comm+i])
+        messages[ind_comm+i-nb] = message_billet(numfil,fil.origine,fil.billets[i].pseudo,fil.billets[i].data_len, fil.billets[i].data);
+        if(!messages[ind_comm+i-nb])
             return 0;
     }
     return 1;
@@ -194,7 +194,7 @@ int get_messages(fils_t * fils, uint16_t numfil, uint16_t nb, char*** messages, 
     int ind_comm = 0;
     for(int i=0; i<fils->nb_fils; i++){
         uint16_t nb_cop=0;
-        if(!get_messages_fil(fils,*messages,0,numfil,nb,&nb_cop)){
+        if(!get_messages_fil(fils,*messages,ind_comm,i+1,nb,&nb_cop)){
             free_messages_billets(*messages, *nb_rep);
             return 0;
         }
