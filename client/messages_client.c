@@ -38,79 +38,44 @@ char * message_inscription_client(char * pseudo){
 
 
 char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb, uint8_t datalen, char * data){
-  //7 octets + le nombre d'octets pour le texte du billet
-  char * res = (char *)malloc(7 + (datalen * sizeof(char)));
-  if(res == NULL){
-    perror("malloc");
-    return NULL;
-  }
-  //remplir l'entête
-  ((uint16_t *)res)[0] = entete_message(code_req,id);
-  //les autres champs
-  ((uint16_t *)res)[1] = htons(numfil);
-  ((uint16_t *)res)[2] = htons(nb);
-  ((u_int8_t *)res)[6] = datalen;
+	//7 octets + le nombre d'octets pour le texte du billet
+	char * res = (char *)malloc(7 + (datalen * sizeof(char)));
+	if(res == NULL){
+		perror("malloc");
+		return NULL;
+	}
+	//remplir l'entête
+	((uint16_t *)res)[0] = entete_message(code_req,id);
+	//les autres champs
+	((uint16_t *)res)[1] = htons(numfil);
+	((uint16_t *)res)[2] = htons(nb);
+	((u_int8_t *)res)[6] = datalen;
 
-  //copier le texte du message
-  if(datalen > 0){
-    memmove(res+7, data, datalen);    
-  }
+	//copier le texte du message
+	if(datalen > 0){
+		memmove(res+7, data, datalen);    
+	}
 
-  return res;
+	return res;
 }
 
-
-
-
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
-  uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;
-  uint8_t datalen = 0;
-  char data[]="";
-  return message_client(code_req,id,numfil,nb,datalen,data);
+	uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;
+	uint8_t datalen = 0;
+	char data[]="";
+	return message_client(code_req,id,numfil,nb,datalen,data);
 }
 
 char * message_abonnement_fil(uint16_t id, uint16_t numfil){
-  uint16_t code_req = CODE_REQ_ABONNEMENT_FIL;
-  uint8_t datalen = 0;
-  uint16_t nb = 0;
-  char data[]="";
-  return message_client(code_req,id,numfil,nb,datalen,data);
+	uint16_t code_req = CODE_REQ_ABONNEMENT_FIL;
+	uint8_t datalen = 0;
+	uint16_t nb = 0;
+	char data[]="";
+	return message_client(code_req,id,numfil,nb,datalen,data);
 }
 
-u_int16_t reponse_derniers_billets(u_int16_t * rep){
-  uint8_t cod_req;
-  uint16_t id;
-  u_int16_t numfil = ntohs(rep[1]);
-  u_int16_t nb = ntohs(rep[2]);
-  u_int16_t entete = ntohs(rep[0]);
-  u_int16_t masque = 0b0000000000011111;
-  cod_req = entete & masque;
-  id = (entete & ~masque) >> 5;
-  
 
-  if(cod_req!= CODE_REQ_DEMANDE_BILLETS){
-    fprintf(stderr, "reponse de demande des derniers billets erroné et le code reçu est %d\n",cod_req);
-    return 0;
-  }
-  printf("id est %u codereq est %u Numfil est %u et Nb est %u\n",id,cod_req,numfil,nb);
-  return nb;
-}
 
-u_int8_t reponse_derniers_billets_datalen(char* rep){
-
-  u_int16_t numfil = ntohs( ((uint16_t *)rep)[0]);
-  char  origine[11];
-  char pseudo[11];
-  memmove(origine,rep+2,10);
-  origine[10] = '\0';
-  memmove(pseudo,rep+12,10);
-  pseudo[10] = '\0';
-  printf("Numfil : %u\n",numfil);
-  printf("Origine : %s\n",origine);
-  printf("Pseudo : %s\n",pseudo);
-  uint8_t datalen = ((uint8_t *)rep)[22];
-  return datalen;
-}
 
 int reponse_abonnement(char *rep){
   

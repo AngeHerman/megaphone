@@ -79,19 +79,6 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
 */
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb);
 
-/**
- * @param rep la reponse du serveur à décoder
- * 
- * @return le nombre de message à venir
-*/
-u_int16_t reponse_derniers_billets(u_int16_t * rep);
-
-/**
- * @param rep la reponse du serveur jusqu'à datalen à décoder
- * 
- * @return datalen la taille du message qui arrive
-*/
-u_int8_t reponse_derniers_billets_datalen(char* rep);
 
 /**
  * @param id id du client
