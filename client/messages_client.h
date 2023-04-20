@@ -88,12 +88,7 @@ char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb);
 */
 char * message_abonnement_fil(uint16_t id, uint16_t numfil);
 
-/**
- * @param rep la reponse du serveur à décoder
- * 
- * @return l'adresse d'abonnement envoyé par le serveur
-*/
-int reponse_abonnement(char *rep);
+
 
 
 

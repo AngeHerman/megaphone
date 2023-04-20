@@ -85,3 +85,27 @@ u_int8_t reponse_derniers_billets_datalen(char* rep){
 	uint8_t datalen = ((uint8_t *)rep)[22];
 	return datalen;
 }
+
+int reponse_abonnement(char *rep,char *addr,uint16_t *port){
+    uint8_t cod_req;
+	uint16_t id;
+	u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
+	u_int16_t port_multidiff = ntohs(((uint16_t *)rep)[2]);
+	u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
+	u_int16_t masque = 0b0000000000011111;
+	cod_req = entete & masque;
+	id = (entete & ~masque) >> 5;
+    if(cod_req!= CODE_REQ_ABONNEMENT_FIL){
+		fprintf(stderr, "reponse de abonnement erroné et le code reçu est %d\n",cod_req);
+		return 0;
+	}
+    memmove(addr,rep+6,16);
+    uint16_t *addr_u;
+    for(int i = 0; i < 8; i++ ){
+        addr_u[i] = ntohs( ((uint16_t *)addr)[i] );
+    }
+    memmove(addr,addr_u,16);
+    *port = port_multidiff;
+    return 1;
+
+}

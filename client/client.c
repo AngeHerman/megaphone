@@ -58,7 +58,7 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
 int get_data(char *data,int taille,int sock){
     buf_t *buf = creer_buf_t(taille);
     if (buf == NULL){
-        perror("error creation buf");
+        perror("erreur creation buf");
         return 0;
     }
     int r =read_msg(sock, buf);
@@ -117,11 +117,18 @@ int demande_abonnement(int sock,u_int16_t id_client,uint16_t numfil){
         return 0;
     } 
     free(mess_abonnement_fil);
-    buf_t *buf = creer_buf_t(NB_OCTECS_REPONSES_ABONNEMENT);
     char data[NB_OCTECS_REPONSES_ABONNEMENT];
     memset(data,0,NB_OCTECS_REPONSES_ABONNEMENT);
     if (!get_data(data,NB_OCTECS_REPONSES_ABONNEMENT,sock))
         return 0;
+    char addr[17];
+    memset(addr,0,17);
+    uint16_t *port;
+    if(!reponse_abonnement(data,addr,port))
+        return 0;
+    printf("port est %d\n",*port);
+    printf("addr est %s\n",addr);
+    return 1;
 }
 
 

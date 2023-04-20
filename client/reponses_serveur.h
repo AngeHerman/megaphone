@@ -31,4 +31,12 @@ u_int16_t reponse_derniers_billets(u_int16_t * rep);
 */
 u_int8_t reponse_derniers_billets_datalen(char* rep);
 
+/**
+ * @param rep la reponse du serveur à décoder
+ * @param addr la variable où sera stockée l'adresse de multidiffusion
+ * @return l'adresse d'abonnement envoyé par le serveur
+*/
+int reponse_abonnement(char *rep,char *addr,uint16_t *port);
+
+
 #endif

@@ -73,10 +73,3 @@ char * message_abonnement_fil(uint16_t id, uint16_t numfil){
 	char data[]="";
 	return message_client(code_req,id,numfil,nb,datalen,data);
 }
-
-
-
-
-int reponse_abonnement(char *rep){
-  
-}

@@ -98,10 +98,14 @@ int telecharger_fichier(int sock){
 }
 
 int choix_client(int sock){
-  char offre_inscription[] = "Tapez 1 pour s'inscrire auprès du serveur\n";
-  char offre_poster_billet[] = "Tapez 2 pour poster un billet sur un fil\n"; 
-  char offre_demande_billets[] = "Tapez 3 pour demander la liste des derniers billets sur un fil\n";
-  printf("%s%s%s", offre_inscription, offre_poster_billet, offre_demande_billets);
+  char inscription[] = "Tapez 1 pour s'inscrire auprès du serveur\n";
+  char poster_un_billet[] = "Tapez 2 pour poster un billet sur un fil\n"; 
+  char demande_billets[] = "Tapez 3 pour demander la liste des derniers billets sur un fil\n";
+  char abonnement[] = "Tapez 4 pour vous abonner à un fil\n";
+  char ajout_fichier[] = "Tapez 5 pour ajouter un fichier sur un fil\n";
+  char tlc_fichier[] = "Tapez 6 pour telecharger un fichier\n";
+
+  printf("%s%s%s%s%s%s", inscription, poster_un_billet, demande_billets,abonnement,ajout_fichier,tlc_fichier);
   int rep_client;
   char rep_s[3] = {0};
   fgets(rep_s, 3, stdin);
@@ -113,6 +117,12 @@ int choix_client(int sock){
       return poster_billet(sock);
     case 3 : 
       return demader_billets(sock);
+    case 4:
+      return abonnement_fil(sock);
+    case 5 :
+      return ajouter_fichier(sock);
+    case 6 : 
+      return telecharger_fichier(sock);
     default:
       fprintf(stderr,"Opération pas prise en charge\n");
       break;
