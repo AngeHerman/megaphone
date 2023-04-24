@@ -62,6 +62,7 @@ int inscrire_client(int sock, inscrits_t *inscrits)
             fprintf(stderr, "erreur malloc");
         return 0;
     }
+    printf("client %s inscrit avec id %d\n", pseudo,id);
     char *mess = message_server(1, (uint16_t)id, 0, 0);
     if (mess == NULL)
     {
@@ -219,9 +220,14 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
     char** messages = NULL;
     uint16_t numfil_rep;
     uint16_t nb_rep;
-
-    if(!get_messages(filst,numfil,nb, &messages, &numfil_rep, &nb_rep))
+    /*On fait une copie de la liste des fils pour éviter des modification par un autre
+    thread entre le moment où on compte le nombre de messages à envoyer et où on récupère les messages*/
+    fils_t* copy_fils = copy_list_fils(filst);
+    if(!get_messages(copy_fils,numfil,nb, &messages, &numfil_rep, &nb_rep)){
+        free_fils(copy_fils);
         return 0;
+    }
+    free_fils(copy_fils);
     if(!annoncer_envoi_billets(sock,numfil_rep,nb_rep,id)){
         free_messages_billets(messages,nb_rep);
         return 0;

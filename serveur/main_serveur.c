@@ -16,6 +16,7 @@
 
 inscrits_t * inscrits;
 fils_t * fils;
+pthread_mutex_t verrou_inscription = PTHREAD_MUTEX_INITIALIZER;
 
 void *serve(void *arg) {
     int sock = *((int *) arg);
@@ -30,15 +31,17 @@ void *serve(void *arg) {
     /*recupération du codereq et verification du type de demande*/
     switch(get_code_req(entete)){
         /*demande d'inscription*/
-        case 1: 
+        case 1:
+            pthread_mutex_lock(&verrou_inscription); 
             rep = inscrire_client(sock, inscrits);
+            pthread_mutex_unlock(&verrou_inscription);
             break;
         /*poster un billet*/
         case 2:
             rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
             break;
         /*derniers n billets d'un fil*/
-        case 3 :
+        case 3:
             rep = demander_des_billets(sock,inscrits,fils,get_id_requete(entete));
             break;
     }

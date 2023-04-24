@@ -7,7 +7,6 @@ typedef struct billet_t{
     char pseudo[11]; //pseudo de celui qui a posté le billet
     uint8_t data_len; //longueur du billet
     char* data; //le texte du billet
-
 }billet_t;
 
 typedef struct fil_t{
@@ -92,4 +91,7 @@ int get_messages(fils_t * fils, uint16_t numfil, uint16_t nb, char*** messages, 
 
 
 void free_messages_billets(char** messages, uint16_t nb_mess);
+fils_t * copy_list_fils(fils_t * fs);
+fil_t copy_fil(fil_t  f);
+billet_t copy_billet(billet_t b);
 #endif
