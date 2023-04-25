@@ -222,10 +222,13 @@ long int taille_fichier(char *file_name)
 
 int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic){
     int nb_paquets = taille_fic/TAILLE_PAQUET_UDP;
-    //On lit et on envoie par 512. Si le fichier est < 512 octets on entre pas dans la boucle
+    /*On lit et on envoie par 512. La boucle fera nb_paquets + 1 tour. Le dernier tour correspondra au dernier paquet <512
+    pour signifier la fin de l'envoie
+    */
     for(int i = 0; i <= nb_paquets; i++){
         int taille_a_lire = TAILLE_PAQUET_UDP;
-        //Le cas où on doit envoyer le dernier message < 512 octets
+        
+        //Le cas où on doit envoyer le dernier paquets < 512 octets
         if(i == nb_paquets){
             taille_a_lire = taille_fic%TAILLE_PAQUET_UDP; //La taille du dernier paquet   soit 0 soit < 512
         }
