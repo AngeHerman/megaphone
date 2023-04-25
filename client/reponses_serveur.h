@@ -38,5 +38,12 @@ u_int8_t reponse_derniers_billets_datalen(char* rep);
 */
 int reponse_abonnement(char *rep,char *addr,uint16_t *port);
 
+/**
+ * @brief verifie que la réponse du serveur respecte le bon format et renvoie le numero de port UDP
+ * @param rep la reponses du serveur
+ * @return uint16_t le numéro de port UDP ou 0 en cas d'échec
+*/
+uint16_t reponse_ajout_fichier(char * rep);
+
 
 #endif

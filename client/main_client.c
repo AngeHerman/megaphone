@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 
     int ret=1;
     //demander au client l'action voulue et l'exécuter
-    if(choix_client(fdsock))
+    if(choix_client(fdsock,hostname))
         ret = 0;
 
     close(fdsock);

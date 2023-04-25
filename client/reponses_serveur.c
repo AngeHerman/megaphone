@@ -109,3 +109,22 @@ int reponse_abonnement(char *rep,char *addr,uint16_t *port){
     return 1;
 
 }
+
+uint16_t reponse_ajout_fichier(char * rep){
+    uint8_t cod_req;
+	uint16_t id;
+	u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
+	u_int16_t port = ntohs(((uint16_t *)rep)[2]);
+	u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
+	u_int16_t masque = 0b0000000000011111;
+	cod_req = entete & masque;
+	id = (entete & ~masque) >> 5;
+
+
+	if(cod_req!= CODE_REQ_AJOUT_FICHIER){
+		fprintf(stderr, "reponse ajout fichier est erroné et le code reçu est %d\n",cod_req);
+		return 0;
+	}
+	return port;
+
+}

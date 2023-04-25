@@ -6,7 +6,9 @@
 #define LEN_PSEUDO 10
 #define LEN_MESS_INSCR 12 //entête de deux octets + 10 octets pour le pseudo
 #define LEN_MESS_CLIENT 7// entête de deux octets + 2 octets numfil + 2 octets nb + 1 octet datalen
+#define TAILLE_PAQUET_UDP 512
 
+#define CODE_REQ_P0STER_BILLET 2 //code_req pour poster un billet
 #define CODE_REQ_DEMANDE_BILLETS 3 //code_req pour la demande des billets
 #define CODE_REQ_ABONNEMENT_FIL 4 //code_req pour l'abonnement à un
 #define CODE_REQ_AJOUT_FICHIER 5 //code_req pour l'ajout de fichier
@@ -66,6 +68,20 @@ char * message_inscription_client(char * pseudo);
  * @return le message du client au bon format
 */
 char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb, uint8_t datalen, char * data);
+
+
+/**
+ *
+ * @param code_req code de la requête du client
+ * @param id id du client
+ * @param numbloc le numéro du bloc
+ * @param datalen la taille de data
+ * @param data la donnée elle même
+ * 
+ * @return le message du client au bon format
+*/
+char * message_client_udp(uint16_t code_req, uint16_t id,uint16_t numbloc, int datalen, char * data);
+
 
 
 

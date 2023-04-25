@@ -6,7 +6,7 @@
 /**
  * demande au client l'action qu'il veut effectuer et l'exécute
 */
-int choix_client(int sock);
+int choix_client(int sock,char* hostname);
 
 
 /**
@@ -31,7 +31,7 @@ int abonnement_fil(int sock);
 /**
  * @return int 1 en cas de succès, et 0 en cas d'échec
 */
-int ajouter_fichier(int sock);
+int ajouter_fichier(int sock,char * hostname);
 
 /**
  * @return int 1 en cas de succès, et 0 en cas d'échec
