@@ -13,7 +13,8 @@
 #include "fils.h"
 #include "messages_serveur.h"
 
-#define SIZE_MESS_SERV 6
+
+pthread_mutex_t verrou_fichier = PTHREAD_MUTEX_INITIALIZER;
 
 uint16_t lire_entete(int sock)
 {
@@ -149,9 +150,7 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
     u_int8_t datalen;
     if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen))
         return 0;
-    if (nb != 0) // nb doit être 0 dans le message client
-        return 0;
-    if(datalen == 0)
+    if (nb != 0 || datalen==0) // nb doit être 0 dans le message client
         return 0;
     char data[datalen + 1];
     memset(data, 0, sizeof(data));
@@ -160,8 +159,7 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
     }
     // ajouter le billet
     printf("datalen : %d, data :%s\n", datalen, data);
-    if (numfil == 0)
-    { // on ajoute le billet dans un nouveau fil
+    if (numfil == 0){ // on ajoute le billet dans un nouveau fil
         fil_t *fil = ajouter_nouveau_fil(fils, pseudo);
         if (!fil)
             return 0;

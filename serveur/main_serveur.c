@@ -13,10 +13,13 @@
 #include "serveur.h"
 #include "messages_serveur.h"
 #include "../lecture.h"
+#include "../fichiers.h"
 
+extern file_list_t * file_list; 
 inscrits_t * inscrits;
 fils_t * fils;
 pthread_mutex_t verrou_inscription = PTHREAD_MUTEX_INITIALIZER;
+uint16_t port_udp;
 
 void *serve(void *arg) {
     int sock = *((int *) arg);
@@ -44,6 +47,9 @@ void *serve(void *arg) {
         case 3:
             rep = demander_des_billets(sock,inscrits,fils,get_id_requete(entete));
             break;
+        /*recevoir un fichier*/
+        case 5:
+            rep = recevoir_fichier(sock,inscrits,fils,get_id_requete(entete),port_udp);
     }
     if(rep){//succès
         *ret = 1;
@@ -57,10 +63,32 @@ void *serve(void *arg) {
     pthread_exit(ret);
 }
 
+void * serve_udp(void* arg){
+    int * ret = (int*) malloc(sizeof(int));
+    * ret = 0;
+    int sock_udp = socket(PF_INET6, SOCK_DGRAM, 0);
+    if (sock_udp < 0) {
+        *ret = -1;
+        return ret;
+    }
+    struct sockaddr_in6 servadrudp;
+    memset(&servadrudp, 0, sizeof(servadrudp));
+    servadrudp.sin6_family = AF_INET6;
+    servadrudp.sin6_addr = in6addr_any;
+    servadrudp.sin6_port = htons(port_udp);
+    if (bind(sock_udp, (struct sockaddr *)&servadrudp, sizeof(servadrudp)) < 0) {
+        *ret = -1;
+        return ret;
+    }
+    *ret = transmission_fichiers(sock_udp);
+    close(sock_udp);
+    return ret;
+}
+
 int main(int argc, char *argv[]){
 
-    if(argc<2){
-        fprintf(stderr, "Usage : %s <num_port>\n", argv[0]);
+    if(argc<3){
+        fprintf(stderr, "Usage : %s <num_port> <num_pord_udp>\n", argv[0]);
         exit(1);
     }
 
@@ -68,6 +96,7 @@ int main(int argc, char *argv[]){
     inscrits = creer_inscrits_t();
     /*Création liste de fils*/
     fils = creer_list_fils();
+    file_list = init_file_list();
 
     //*** creation de l'adresse du destinataire (serveur) ***
     struct sockaddr_in6 address_sock;
@@ -105,6 +134,13 @@ int main(int argc, char *argv[]){
     if (r < 0) {
         perror("erreur listen");
         exit(2);
+    }
+
+    port_udp = atoi(argv[2]);
+    pthread_t thread_udp;
+    if(pthread_create(&thread_udp,NULL,serve_udp,NULL)==-1){
+        perror("pthread_create");
+        exit(3);
     }
     
     while(1){
