@@ -11,10 +11,12 @@ bin/messages_client.o : client/messages_client.c client/messages_client.h
 bin/reponses_serveur.o : client/reponses_serveur.c client/reponses_serveur.h
 	gcc -c client/reponses_serveur.c -o bin/reponses_serveur.o
 
-main_serveur : bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o
-	gcc bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o -pthread -o main_serveur
-bin/main_serveur.o : serveur/main_serveur.c serveur/serveur.h lecture.h 
+main_serveur : bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/lecture.o bin/fichiers.o
+	gcc bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/fichiers.o bin/lecture.o -pthread -o main_serveur
+bin/main_serveur.o : serveur/main_serveur.c serveur/serveur.h lecture.h fichiers.h 
 	gcc -c serveur/main_serveur.c -o bin/main_serveur.o
+bin/fichiers.o : fichiers.h serveur/serveur.h serveur/messages_serveur.h
+	gcc -c fichiers.c -o bin/fichiers.o
 bin/serveur.o : serveur/serveur.c serveur/serveur.h lecture.h
 	gcc -c serveur/serveur.c -o bin/serveur.o
 bin/messages_serveur.o : serveur/messages_serveur.c serveur/messages_serveur.h
