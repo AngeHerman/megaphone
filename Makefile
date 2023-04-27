@@ -1,4 +1,4 @@
-main_client : bin/main_client.o bin/messages_client.o bin/reponses_serveur.o bin/client.o bin/interaction.o bin/lecture.o
+main_client : main_serveur bin/main_client.o bin/messages_client.o bin/reponses_serveur.o bin/client.o bin/interaction.o bin/lecture.o
 	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o -o main_client 
 bin/main_client.o : client/main_client.c client/client.h 
 	gcc -c client/main_client.c -o bin/main_client.o
@@ -15,7 +15,7 @@ main_serveur : bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscr
 	gcc bin/main_serveur.o bin/messages_serveur.o bin/serveur.o bin/inscrits.o bin/fils.o bin/fichiers.o bin/lecture.o -pthread -o main_serveur
 bin/main_serveur.o : serveur/main_serveur.c serveur/serveur.h lecture.h fichiers.h 
 	gcc -c serveur/main_serveur.c -o bin/main_serveur.o
-bin/fichiers.o : fichiers.h serveur/serveur.h serveur/messages_serveur.h
+bin/fichiers.o : fichiers.h fichiers.c serveur/serveur.h serveur/messages_serveur.h
 	gcc -c fichiers.c -o bin/fichiers.o
 bin/serveur.o : serveur/serveur.c serveur/serveur.h lecture.h
 	gcc -c serveur/serveur.c -o bin/serveur.o
@@ -30,4 +30,4 @@ bin/lecture.o : lecture.c lecture.h
 	gcc -c lecture.c -o bin/lecture.o
 
 clean : 
-	rm -rf  main_client main_serveur bin/*.o
+	rm -rf  main_client main_serveur bin/*.o serveur/fichiers/*

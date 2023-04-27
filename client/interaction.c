@@ -92,20 +92,26 @@ int abonnement_fil(int sock){
 int ajouter_fichier(int sock,char* hostname){
 	int id;
 	int numfil;
-	char texte[255+1];
 	uint8_t datalen;
-	memset(texte,0,sizeof(texte));
-	char temp[255+1+1];
-	memset(temp,0,sizeof(temp));
-	printf("Entrez votre id :\n");
-	scanf("%d", &id);
-	printf("Entrez le numéro du fil où envoyer le fichier:\n");
-	scanf("%d", &numfil);
-	printf("Entrez le nom du fichier à envoyer:\n");
-	fgets(temp, 257, stdin);
-	memmove(texte,temp,strlen(temp)-1);//enlever le '\n'
-	datalen = strlen(texte);
-	uint16_t res = ajouter_un_fichier(sock, id, numfil, datalen, texte,hostname);
+	char file_name[255+1];
+    char tmp[255+1+1];
+    char nb[7];
+    memset(file_name,0,sizeof(file_name));
+    memset(tmp,0,sizeof(tmp));
+    
+    printf("Entrez votre id :\n");
+    fgets(nb,7,stdin);
+    id = atoi(nb);
+    memset(nb,0,sizeof(nb));
+    printf("Entrez le numéro du fil où envoyer le fichier :\n");
+    fgets(nb,7,stdin);
+    numfil = atoi(nb);
+    printf("Entrez le nom du fichier à envoyer :\n");
+    fgets(tmp, 257, stdin);
+    memmove(file_name,tmp,strlen(tmp)-1);//enlever le '\n'
+    datalen = strlen(file_name);
+    
+	uint16_t res = ajouter_un_fichier(sock, id, numfil, datalen, file_name, hostname);
     if(res==0){
         fprintf(stderr,"Le fichier n'a pas été ajouté\n");
         return 0;
@@ -116,7 +122,7 @@ int ajouter_fichier(int sock,char* hostname){
 }
 
 int telecharger_fichier(int sock){
-
+    return 0;
 }
 
 int choix_client(int sock,char* hostname){

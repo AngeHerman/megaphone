@@ -6,7 +6,7 @@
 #define NB_OCTECS_REPONSES_ABONNEMENT 22//code_req et ID (2 otects)+Numfil (2 otects)+nb (2) + adresse(16)
 #define NB_OCTECS_MESSAGE_SERVEUR 6
 #define TAILLE_MAX_AJOUT_FICHIER 33554432 //en octets
-#define CHEMIN_FICHIER_CLIENT "fichier/"
+#define CHEMIN_FICHIER_CLIENT "client/fichier/"
 #define TAILLE_MAX_STRING 4096 //taille maximale des char *
 
 
@@ -22,6 +22,8 @@ void affiche_adresse(struct sockaddr_in6 *adr);
  *  @brief  Tente de connecter le client au sserveur puis renvoie un entier spécifiant si la connexion a réussi ou non 
 */
 int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6** addr, int* addrlen);
+
+int get_server_addrudp(char* hostname, char* port, int * sock_udp, struct sockaddr_in6* addr, int* addrlen) ;
 
 /**
  *  @brief Demande au serveur les derniers billets selon les parametres 
@@ -71,8 +73,7 @@ long int taille_fichier(char *file_name);
  * @brief Envoie le fichier par paquets de 512
  * @return 0 en cas d'échec, 1 si tout s'est bien passé
 */
-int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic);
-
+int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sockaddr_in6 addr, int adrlen);
 
 /**
  * @brief ajoue le fichier data au serveur sur le port

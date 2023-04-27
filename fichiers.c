@@ -16,10 +16,12 @@
 typedef struct bloc{
     uint16_t num_bloc;
     char* data;
+    int data_len;
     struct bloc* next;
 }bloc_t;
 
 typedef struct fic{
+    int recu_dernier;
     uint16_t id;
     bloc_t * blocs;
     struct fic* next;
@@ -57,6 +59,7 @@ fic_t* add_fic(fics_t * fics, uint16_t id){
         perror("malloc");
         return NULL;
     }
+    memset(fic,0,sizeof(fic_t));
     fic->blocs = NULL;
     fic->id = id;
 
@@ -79,11 +82,13 @@ void supp_fic(fics_t * fics, uint16_t id){
         tmp = fics->first;
         fics->first = fics->first->next; 
     }
-    fic_t * f = fics->first;
-    while(f->next->id!=id)
-        f=f->next;
-    tmp = f->next;
-    f->next = f->next->next;
+    else{
+        fic_t * f = fics->first;
+        while(f->next->id!=id)
+            f=f->next;
+        tmp = f->next;
+        f->next = f->next->next;
+    }
     free_blocs(tmp->blocs);
     free(tmp);
 }
@@ -138,13 +143,14 @@ int add_id_file(uint16_t id, char* name_file, uint16_t numfil){
 
     id_file->next = file_list->first;
     file_list->first = id_file;
-    return 0;
+    return 1;
 }
 
 void free_id_file(id_file_t * id_file){
     free(id_file->name);
     free(id_file);
 }
+
 void rm_id_file(u_int16_t id){
     id_file_t*  tmp;
     if(file_list->first->id==id){
@@ -152,10 +158,14 @@ void rm_id_file(u_int16_t id){
         file_list->first = tmp->next;
         free_id_file(tmp);
     }
-    tmp = file_list->first;
-    while(tmp->next->id!=id)
-        tmp = tmp->next;
-    tmp->next=tmp->next->next;
+    else{
+        tmp = file_list->first;
+        while(tmp->next->id!=id)
+            tmp = tmp->next;
+        id_file_t * sav = tmp->next;
+        tmp->next=tmp->next->next;
+        free_id_file(sav);
+    }
 }
 
 char * get_name(uint16_t id){
@@ -196,8 +206,9 @@ int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id,
     }
     // ajouter le billet
     printf("file_name len : %d, file_name :%s\n", datalen, file_name);
-    if(!add_id_file(id,file_name,numfil))
+    if(!add_id_file(id,file_name,numfil)){
         return 0;    
+    }
     if(!annoncer_ecoute_pour_recevoir_fichier(sock,numfil,id,port))
         return 0;
     // on ajoute le fichier dans le fil numfil
@@ -207,64 +218,91 @@ int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id,
 int save_fic(fic_t * fic){
     char path[50];
     sprintf(path,"serveur/fichiers/fil%d/%s",get_numfil(fic->id),get_name(fic->id));
-    int fd = open(path,O_CREAT|O_TRUNC|O_WRONLY,0666);
+    int fd = open(path,O_CREAT|O_TRUNC|O_WRONLY,0777);
     if(fd<0){
         perror("open");
         return 0;
     }
     bloc_t * b = fic->blocs;
+    int count=0;
     while(b!=NULL){
-        int nb = write(fd,b->data,strlen(b->data));
-        if(nb!=strlen(b->data)){
+        int nb = write(fd,b->data,b->data_len);
+        if(nb!=b->data_len){
             perror("write");
         }
+        b=b->next;
+        count++;
     }
+    close(fd);
     rm_id_file(fic->id);
+    return 1;
 }
 
-int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data){
+int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data, int len, int count){
     fic_t * fic = get_fic(fics,id);
     if(fic==NULL){//ajouter un fichier
         fic = add_fic(fics,id) ;
         if(fic==NULL)
             return 0;
     }
-    size_t len = strlen(data);
+    
+    bloc_t * bloc = (bloc_t*)malloc(sizeof(bloc_t));
+    memset(bloc,0,sizeof(bloc_t));
+    if(bloc==NULL){
+        perror("malloc");
+        return 0;
+    }
+    bloc->num_bloc = numbloc;
+    bloc->data_len = len;
     if(len>0){
-        bloc_t * bloc = (bloc_t*)malloc(sizeof(bloc_t));
-        if(bloc==NULL){
-            perror("malloc");
-            return 0;
-        }
-        bloc->num_bloc = numbloc;
-        bloc->data = (char*)malloc(sizeof(char)*(strlen(data)+1));
-        memmove(bloc->data, data, strlen(data));
-        bloc->data[strlen(data)]='\0';
-        if(fic->blocs==NULL){
-            fic->blocs = bloc;
-            bloc->next = NULL;
+        bloc->data = (char*)malloc(sizeof(char)*(len+1));
+        memmove(bloc->data, data, len);
+        bloc->data[len]='\0';
+    }    
+    if(fic->blocs==NULL){
+        fic->blocs = bloc;
+        bloc->next = NULL;
+    }
+    else{
+        bloc_t * b = fic->blocs;
+        if(fic->blocs->num_bloc>bloc->num_bloc){
+            bloc->next=fic->blocs;
+            fic->blocs=bloc;
         }
         else{
-            bloc_t * b = fic->blocs;
-            if(fic->blocs->num_bloc>bloc->num_bloc){
-                bloc->next=fic->blocs;
-                fic->blocs=bloc;
-            }
-            while(b->next!=NULL && b->next->num_bloc>bloc->num_bloc)
+            while(b->next!=NULL && b->next->num_bloc<bloc->num_bloc)
                 b=b->next;
             bloc->next = b->next;
             b->next = bloc;
         }
     }
-    if(len<LEN_PAQUET){//on a eu tout le fichier
-        save_fic(fic);
-        supp_fic(fics,id);
+    if(len<LEN_PAQUET){
+        fic->recu_dernier = bloc->num_bloc;
     }
-
+    
+    if(fic->recu_dernier){//on a eu tout les blocs
+        int save = TRUE;
+        for(bloc_t* b = fic->blocs; b!=NULL; b=b->next){
+            if(b->next!=NULL && b->num_bloc!=b->next->num_bloc-1){
+                save=FALSE;
+                break;
+            }
+            if(b->next==NULL && b->num_bloc!=fic->recu_dernier){
+                save=FALSE;
+                break;
+            }
+        }
+        if(save){
+            save_fic(fic);
+            supp_fic(fics,id);
+        }
+    }
+    return 1;
 }
 
 int transmission_fichiers(int sock_udp){
     fics_t* fics = init_fics();
+    int count=0;
     while(1){
         char buff[LEN_PAQUET+5]={0};
         int nb = recvfrom(sock_udp,buff,LEN_PAQUET+5,0,NULL,NULL);
@@ -274,7 +312,7 @@ int transmission_fichiers(int sock_udp){
         }
         buff[nb]='\0';
         uint16_t entete = ntohs(*(uint16_t*)buff);
-        uint16_t num_bloc = ntohs(*(uint16_t*)buff+1);
+        uint16_t num_bloc = ntohs(*(((uint16_t*)buff)+1));
         char * data = buff+4;
         uint8_t code_req = get_code_req(entete);
         uint16_t id = get_id_requete(entete);
@@ -282,7 +320,8 @@ int transmission_fichiers(int sock_udp){
             perror("codereq error");
             continue;
         }
-        add_bloc(fics,num_bloc,id,data);        
+        count++;
+        add_bloc(fics,num_bloc,id,data, nb-4, count);        
     }
     return 0;
 }

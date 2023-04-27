@@ -132,8 +132,8 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
     fs->fils[fs->nb_fils] = f;
     fs->nb_fils+=1;
     char path[50];
-    sprintf(path,"serveur/fichiers/file%d",f.num_fil);
-    if(mkdir(path,0666)<0){
+    sprintf(path,"serveur/fichiers/fil%d",f.num_fil);
+    if(mkdir(path,0777)<0){
         perror("mkdir");
     }
     pthread_mutex_unlock(&verrou_billets);
