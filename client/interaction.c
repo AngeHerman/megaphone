@@ -116,9 +116,8 @@ int ajouter_fichier(int sock,char* hostname){
         fprintf(stderr,"Le fichier n'a pas été ajouté\n");
         return 0;
     }
-    printf("Le fichier a été posté sur le fil numéro %u\n", res);
+    printf("la demande de transfert de fichier sur le fil numéro %u a été effectuée\n", res);
     return 1;
-
 }
 
 int telecharger_fichier(int sock){

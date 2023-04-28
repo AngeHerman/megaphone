@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -27,8 +28,7 @@ void affiche_adresse(struct sockaddr_in6 *adr){
 int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6** addr, int* addrlen) {
     struct addrinfo hints, *r, *p;
     int ret;
-
-    memset(&hints, 0, sizeof(hints));
+    //memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_V4MAPPED | AI_ALL;
@@ -220,9 +220,11 @@ long int taille_fichier(char *file_name)
 
 int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sockaddr_in6 addr, int adrlen){
     int nb_paquets = taille_fic/TAILLE_PAQUET_UDP;
+    printf("%d\n", nb_paquets+1);
     /*On lit et on envoie par 512. La boucle fera nb_paquets + 1 tour. Le dernier tour correspondra au dernier paquet <512
     pour signifier la fin de l'envoie
     */
+    int count = 0;
     for(int i = 0; i <= nb_paquets; i++){
         int taille_a_lire = TAILLE_PAQUET_UDP;
         
@@ -245,10 +247,10 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
             return 0;
         }
         free(mess_paquet_udp);
-
+        count++;
+        sleep(0.1);
     }
     return 1;
-
 }
 
 int envoi_fichier(uint16_t id, uint16_t port,char * nom_fichier,char * hostname){
@@ -294,14 +296,12 @@ uint16_t ajouter_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t tai
     memset(data,0,NB_OCTECS_MESSAGE_SERVEUR);
     if (!get_data(data,NB_OCTECS_MESSAGE_SERVEUR,sock))
         return 0;
-    u_int16_t port = reponse_ajout_fichier(data);
+    uint16_t port = reponse_ajout_fichier(data);
     if(!port)
         return 0;
     close(sock);
     if(!envoi_fichier(id,port,nom_fichier,hostname)){
-        printf("here\n");
         return 0;
-
     }
 
 }

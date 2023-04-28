@@ -12,6 +12,7 @@
 #include "inscrits.h"
 #include "fils.h"
 #include "messages_serveur.h"
+#include "../fichiers.h"
 
 
 pthread_mutex_t verrou_fichier = PTHREAD_MUTEX_INITIALIZER;
@@ -236,4 +237,77 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
     }
     free_messages_billets(messages,nb_rep);
     return 1;
+}
+
+//recevoir fichier
+void * serve_udp(void* arg){
+    int sock_udp = *((int*)arg);
+    int* ret = malloc(sizeof(int));
+    *ret = transmission_fichiers(sock_udp);
+    close(sock_udp);
+    return ret;
+}
+
+
+int creer_socket_udp(int* sock_udp, int* port){
+    *sock_udp = socket(PF_INET6, SOCK_DGRAM, 0);
+    if (*sock_udp < 0) {
+        return 0;
+    }
+    struct sockaddr_in6 servadrudp;
+    memset(&servadrudp, 0, sizeof(servadrudp));
+    servadrudp.sin6_family = AF_INET6;
+    servadrudp.sin6_addr = in6addr_any;
+    //le système choisira un port
+    servadrudp.sin6_port = htons(0);
+    if (bind(*sock_udp, (struct sockaddr *)&servadrudp, sizeof(servadrudp)) < 0) {
+        return 0;
+    }
+    //obtenir le port choisi
+    socklen_t addrlen = sizeof(servadrudp);
+    if(getsockname(*sock_udp,(struct sockaddr*)&servadrudp,&addrlen)==-1){
+        return 0;
+    }
+    *port = ntohs(servadrudp.sin6_port);
+    return 1;
+}
+
+int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
+    char pseudo[LEN_PSEUDO + 1];
+    if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
+        return 0;
+    }
+    u_int16_t numfil;
+    u_int16_t nb;
+    u_int8_t datalen;
+    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
+        return 0;
+    }
+    if(nb!=0 || datalen==0)
+        return 0;
+    char file_name[datalen + 1];
+    memset(file_name, 0, sizeof(file_name));
+    if (!lire_data(sock, datalen, file_name)){ // on met le texte du billet dans data
+        return 0;
+    }
+    // ajouter le billet
+    printf("file_name len : %d, file_name :%s\n", datalen, file_name);
+    if(!add_id_file(id,file_name,numfil)){
+        return 0;    
+    }
+
+    int port_udp;
+    int * sock_udp = malloc(sizeof(int));
+    if(!sock_udp){
+        perror("malloc");
+        return 0;
+    }
+    if(!creer_socket_udp(sock_udp,&port_udp))
+        return 0;
+    
+    if(!annoncer_ecoute_pour_recevoir_fichier(sock,numfil,id,port_udp))
+        return 0;
+    transmission_fichiers(*sock_udp);
+    
+    return ajouter_billet_num(filst, numfil, pseudo, datalen, file_name);
 }

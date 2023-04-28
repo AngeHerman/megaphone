@@ -13,25 +13,8 @@
 #include "serveur/serveur.h"
 #include "serveur/messages_serveur.h"
 
-typedef struct bloc{
-    uint16_t num_bloc;
-    char* data;
-    int data_len;
-    struct bloc* next;
-}bloc_t;
-
-typedef struct fic{
-    int recu_dernier;
-    uint16_t id;
-    bloc_t * blocs;
-    struct fic* next;
-}fic_t;
-
-typedef struct temp_fic{
-    fic_t * first;
-}fics_t;
-
-file_list_t * file_list; 
+fics_t* fics ;
+file_list_t * file_list ; 
 
 void free_blocs(bloc_t * b){
     while(b!=NULL){
@@ -186,34 +169,7 @@ uint16_t get_numfil(uint16_t id){
     return 0;
 }
 
-int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id,uint16_t port){
-    char pseudo[LEN_PSEUDO + 1];
-    if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
-        return 0;
-    }
-    u_int16_t numfil;
-    u_int16_t nb;
-    u_int8_t datalen;
-    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
-        return 0;
-    }
-    if(nb!=0 || datalen==0)
-        return 0;
-    char file_name[datalen + 1];
-    memset(file_name, 0, sizeof(file_name));
-    if (!lire_data(sock, datalen, file_name)){ // on met le texte du billet dans data
-        return 0;
-    }
-    // ajouter le billet
-    printf("file_name len : %d, file_name :%s\n", datalen, file_name);
-    if(!add_id_file(id,file_name,numfil)){
-        return 0;    
-    }
-    if(!annoncer_ecoute_pour_recevoir_fichier(sock,numfil,id,port))
-        return 0;
-    // on ajoute le fichier dans le fil numfil
-    return ajouter_billet_num(filst, numfil, pseudo, datalen, file_name);
-}
+
 
 int save_fic(fic_t * fic){
     char path[50];
@@ -238,7 +194,7 @@ int save_fic(fic_t * fic){
     return 1;
 }
 
-int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data, int len, int count){
+int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data, int len){
     fic_t * fic = get_fic(fics,id);
     if(fic==NULL){//ajouter un fichier
         fic = add_fic(fics,id) ;
@@ -276,36 +232,24 @@ int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data, int len, i
             b->next = bloc;
         }
     }
+    fic->nb_bloc_recus++;
     if(len<LEN_PAQUET){
-        fic->recu_dernier = bloc->num_bloc;
+        fic->num_dernier_bloc = bloc->num_bloc;
+        printf("dernier paquet reçu %d\n", bloc->num_bloc);
     }
     
-    if(fic->recu_dernier){//on a eu tout les blocs
-        int save = TRUE;
-        for(bloc_t* b = fic->blocs; b!=NULL; b=b->next){
-            if(b->next!=NULL && b->num_bloc!=b->next->num_bloc-1){
-                save=FALSE;
-                break;
-            }
-            if(b->next==NULL && b->num_bloc!=fic->recu_dernier){
-                save=FALSE;
-                break;
-            }
-        }
-        if(save){
-            save_fic(fic);
-            supp_fic(fics,id);
-        }
+    if(fic->num_dernier_bloc == fic->nb_bloc_recus){//on a eu tout les blocs
+        save_fic(fic);
+        supp_fic(fics,id);
     }
     return 1;
 }
 
 int transmission_fichiers(int sock_udp){
-    fics_t* fics = init_fics();
+    char buff[LEN_PAQUET+5]={0};
+    int nb=0;
     int count=0;
-    while(1){
-        char buff[LEN_PAQUET+5]={0};
-        int nb = recvfrom(sock_udp,buff,LEN_PAQUET+5,0,NULL,NULL);
+    while((nb=recvfrom(sock_udp,buff,LEN_PAQUET+5,0,NULL,NULL))>0){
         if(nb==-1){
             perror("recvfrom");
             continue;
@@ -320,8 +264,7 @@ int transmission_fichiers(int sock_udp){
             perror("codereq error");
             continue;
         }
-        count++;
-        add_bloc(fics,num_bloc,id,data, nb-4, count);        
+        add_bloc(fics,num_bloc,id,data, nb-4);      
     }
     return 0;
 }
