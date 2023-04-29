@@ -223,10 +223,12 @@ int get_messages_fil(fils_t * fils, char**messages, int ind_comm, uint16_t numfi
             *nb_cop = nb;
         i = fil.nb_billets - nb;
     }
+    int j = 0;
     for(; i<fil.nb_billets; i++){
-        messages[ind_comm+i] = message_billet(numfil,fil.origine,fil.billets[i].pseudo,fil.billets[i].data_len, fil.billets[i].data);
-        if(!messages[ind_comm+i])
+        messages[ind_comm+j] = message_billet(numfil,fil.origine,fil.billets[i].pseudo,fil.billets[i].data_len, fil.billets[i].data);
+        if(!messages[ind_comm+j])
             return 0;
+        j++;
     }
     return 1;
 }

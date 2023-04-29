@@ -199,14 +199,14 @@ int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data, int len){
     if(fic==NULL){//ajouter un fichier
         fic = add_fic(fics,id) ;
         if(fic==NULL)
-            return 0;
+            return TRUE;
     }
     
     bloc_t * bloc = (bloc_t*)malloc(sizeof(bloc_t));
     memset(bloc,0,sizeof(bloc_t));
     if(bloc==NULL){
         perror("malloc");
-        return 0;
+        return TRUE;
     }
     bloc->num_bloc = numbloc;
     bloc->data_len = len;
@@ -241,15 +241,18 @@ int add_bloc(fics_t* fics, uint16_t numbloc, uint16_t id, char* data, int len){
     if(fic->num_dernier_bloc == fic->nb_bloc_recus){//on a eu tout les blocs
         save_fic(fic);
         supp_fic(fics,id);
+        return FALSE;
     }
-    return 1;
+    return TRUE;
 }
 
 int transmission_fichiers(int sock_udp){
     char buff[LEN_PAQUET+5]={0};
     int nb=0;
-    int count=0;
-    while((nb=recvfrom(sock_udp,buff,LEN_PAQUET+5,0,NULL,NULL))>0){
+    int taille_fic=0;
+    int continuer = TRUE;
+    while(continuer){
+        nb=recvfrom(sock_udp,buff,LEN_PAQUET+5,0,NULL,NULL);
         if(nb==-1){
             perror("recvfrom");
             continue;
@@ -264,7 +267,8 @@ int transmission_fichiers(int sock_udp){
             perror("codereq error");
             continue;
         }
-        add_bloc(fics,num_bloc,id,data, nb-4);      
+        taille_fic+=nb-4;
+        continuer = add_bloc(fics,num_bloc,id,data, nb-4);      
     }
-    return 0;
+    return taille_fic;
 }

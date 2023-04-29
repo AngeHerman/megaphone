@@ -224,7 +224,6 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
     /*On lit et on envoie par 512. La boucle fera nb_paquets + 1 tour. Le dernier tour correspondra au dernier paquet <512
     pour signifier la fin de l'envoie
     */
-    int count = 0;
     for(int i = 0; i <= nb_paquets; i++){
         int taille_a_lire = TAILLE_PAQUET_UDP;
         
@@ -247,7 +246,6 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
             return 0;
         }
         free(mess_paquet_udp);
-        count++;
         sleep(0.1);
     }
     return 1;
