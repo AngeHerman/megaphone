@@ -15,6 +15,8 @@ typedef struct fil_t{
     billet_t * billets; //tableau des billets postés sur le fil
     int nb_billets; // le nombre de billets sur le fil
     int capacite; // capacite du tableau billets
+    int socket; // socket du multidiffuseur
+    struct sockaddr_in6 addr_multi; // la structure du multidiffuseur
 }fil_t;
 
 typedef struct fils_t{
@@ -50,7 +52,7 @@ void free_fil(fil_t fil);
  * @param orig initiateur du fil
  * @return fil_t* le nouveau fil crée ou NULL en cas d'erreur
  */
-fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig);
+fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig,char * interface);
 
 /**
  * @brief poster un billet sur le fil `fil`
@@ -89,6 +91,8 @@ int ajouter_billet_num(fils_t* fs, uint16_t num_f, char * pseu, uint8_t len, cha
  */
 int get_messages(fils_t * fils, uint16_t numfil, uint16_t nb, char*** messages, uint16_t* numfil_rep, uint16_t* nb_rep);
 
+
+struct sockaddr_in6 get_addr_multi(fils_t * fils, uint16_t numfil);
 
 void free_messages_billets(char** messages, uint16_t nb_mess);
 fils_t * copy_list_fils(fils_t * fs);

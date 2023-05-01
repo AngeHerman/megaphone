@@ -18,6 +18,7 @@
 inscrits_t * inscrits;
 fils_t * fils;
 pthread_mutex_t verrou_inscription = PTHREAD_MUTEX_INITIALIZER;
+char * interface = NULL;
 
 extern fics_t * fics;
 extern file_list_t * file_list;
@@ -42,11 +43,15 @@ void *serve(void *arg) {
             break;
         /*poster un billet*/
         case 2:
-            rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete));
+            rep = poster_un_billet(sock,inscrits,fils, get_id_requete(entete),interface);
             break;
         /*derniers n billets d'un fil*/
         case 3:
             rep = demander_des_billets(sock,inscrits,fils,get_id_requete(entete));
+            break;
+        /*s'abonner a un fil*/
+        case 4:
+            rep = abonner_a_fil(sock,inscrits,fils,get_id_requete(entete));
             break;
         /*recevoir un fichier*/
         case 5:
@@ -68,7 +73,7 @@ void *serve(void *arg) {
 
 int main(int argc, char *argv[]){
 
-    if(argc<2){
+    if(argc<3){
         fprintf(stderr, "Usage : %s <num_port> <num_port_udp>\n", argv[0]);
         exit(1);
     }
@@ -80,6 +85,11 @@ int main(int argc, char *argv[]){
 
     file_list = init_file_list();
     fics = init_fics();
+
+    /*Affectation de l'interface*/
+    interface = malloc(strlen(argv[2])+1);
+    memmove(interface, argv[2], strlen(argv[2]));
+    interface[strlen(argv[2])] = '\0';
 
     //*** creation de l'adresse du destinataire (serveur) ***
     struct sockaddr_in6 address_sock;

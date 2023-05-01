@@ -43,6 +43,19 @@ char * message_billet(uint16_t numfil, char* origine, char* pseudo, uint8_t data
     return res;
 }
 
+char * message_abo(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb, struct sockaddr_in6 addr_mult){
+    char * res = (char*)malloc(sizeof(char) * 22);
+    if(res==NULL)
+        return NULL;
+    
+    //remplir l'entête
+    ((uint16_t *)res)[0] = entete_message(code_req,id);
+    //les autres champs
+    ((uint16_t *)res)[1] = htons(numfil);
+    ((uint16_t *)res)[2] = htons(nb);
+    res[3]= htons(&addr_mult.sin6_addr);
+    return res;
+}
 
 uint8_t get_code_req(uint16_t entete){
     uint16_t masque = 0b0000000000011111;
