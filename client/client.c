@@ -221,9 +221,8 @@ long int taille_fichier(char *file_name)
 int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sockaddr_in6 addr, int adrlen){
     int nb_paquets = taille_fic/TAILLE_PAQUET_UDP;
     printf("%d\n", nb_paquets+1);
-    /*On lit et on envoie par 512. La boucle fera nb_paquets + 1 tour. Le dernier tour correspondra au dernier paquet <512
-    pour signifier la fin de l'envoie
-    */
+    //On lit et on envoie par 512. La boucle fera nb_paquets + 1 tour. Le dernier tour correspondra au dernier paquet <512
+    //pour signifier la fin de l'envoie
     for(int i = 0; i <= nb_paquets; i++){
         int taille_a_lire = TAILLE_PAQUET_UDP;
         
@@ -250,6 +249,7 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
     }
     return 1;
 }
+
 
 int envoi_fichier(uint16_t id, uint16_t port,char * nom_fichier,char * hostname){
     struct sockaddr_in6 server_addr;

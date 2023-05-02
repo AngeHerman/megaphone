@@ -19,9 +19,6 @@ inscrits_t * inscrits;
 fils_t * fils;
 pthread_mutex_t verrou_inscription = PTHREAD_MUTEX_INITIALIZER;
 
-extern fics_t * fics;
-extern file_list_t * file_list;
-
 void *serve(void *arg) {
     int sock = *((int *) arg);
     u_int16_t entete =lire_entete(sock);
@@ -78,8 +75,6 @@ int main(int argc, char *argv[]){
     /*Création liste de fils*/
     fils = creer_list_fils();
 
-    file_list = init_file_list();
-    fics = init_fics();
 
     //*** creation de l'adresse du destinataire (serveur) ***
     struct sockaddr_in6 address_sock;
