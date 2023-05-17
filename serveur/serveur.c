@@ -170,7 +170,7 @@ int confirmer_ajout_billet(int sock, uint16_t numfil, u_int16_t id)
     return 1;
 }
 
-int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
+int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id, char * interface)
 {
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
@@ -191,7 +191,7 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
     // ajouter le billet
     printf("datalen : %d, data :%s\n", datalen, data);
     if (numfil == 0){ // on ajoute le billet dans un nouveau fil
-        fil_t *fil = ajouter_nouveau_fil(fils, pseudo);
+        fil_t *fil = ajouter_nouveau_fil(fils, pseudo, interface);
         if (!fil)
             return 0;
         ajouter_billet(fil, pseudo, datalen, data);
@@ -335,10 +335,39 @@ int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id
         perror("malloc");
         return 0;
     }
-    memmset(billet_file,0,datalen+100);
+    memset(billet_file,0,datalen+100);
     sprintf(billet_file,"fichier : %s, taille : %d", file_name, file_len);
     free(file_name);
     int ret = ajouter_billet_num(filst, numfil, pseudo, strlen(billet_file), billet_file);
     free(billet_file);
     return ret;
+}
+
+int confirmer_abonnement(int sock, fils_t* filst,uint16_t numfil, u_int16_t id){
+    struct sockaddr_in6 addr_mult = get_addr_multi(filst,numfil);
+    char *mess = message_server(4, id, numfil, addr_mult.sin6_port);
+    if (!mess)
+        return 0;
+    if (send(sock, mess, SIZE_MESS_SERV, 0) != SIZE_MESS_SERV)
+    {
+        free(mess);
+        return 0;
+    }
+    free(mess);
+    return 1;
+}
+
+int abonner_a_fil(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
+    char pseudo[LEN_PSEUDO + 1];
+    if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
+        return 0;
+    }
+    u_int16_t numfil;
+    u_int16_t nb;
+    u_int8_t datalen;
+    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
+        return 0;
+    }
+    
+    return confirmer_abonnement(sock, filst, numfil, id);
 }

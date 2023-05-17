@@ -15,6 +15,7 @@
 #define TRUE 1
 
 pthread_mutex_t verrou_billets = PTHREAD_MUTEX_INITIALIZER;
+uint8_t ipv6_addr[16] = {0xff,0x12,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 
 fils_t * creer_list_fils(){
     fils_t * res = (fils_t*) malloc(sizeof(fils_t));
@@ -99,7 +100,7 @@ void free_fil(fil_t fil){
     free(fil.billets);
 }
 
-fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
+fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig, char * interface){
     pthread_mutex_lock(&verrou_billets);
     if(fs->nb_fils == 65535){//il n'y a plus de place
         fprintf(stderr ,"nombre max de fils atteint");
@@ -137,6 +138,7 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
         perror("mkdir");
     }
     pthread_mutex_unlock(&verrou_billets);
+    creer_multidif(&f.socket,&f.addr_multi,interface);
     return fs->fils + (fs->nb_fils-1);
 }
 
@@ -271,4 +273,54 @@ int get_messages(fils_t * fils, uint16_t numfil, uint16_t nb, char*** messages, 
         ind_comm+= nb_cop;
     }
     return 1;
+}
+
+struct sockaddr_in6 get_addr_multi(fils_t * fils, uint16_t numfil){
+    return (fils->fils[numfil-1]).addr_multi;
+}
+
+int creer_multidif(int * sock, struct sockaddr_in6 * addr_multi,char * interface){
+    *sock = socket(AF_INET6, SOCK_DGRAM, 0);
+    int ok = 1;
+    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &ok, sizeof(ok)) < 0) {
+        perror("echec de SO_REUSEADDR");
+        close(sock);
+        return 1;
+    }
+    memset(addr_multi, 0, sizeof(*addr_multi));
+    (*addr_multi).sin6_family = AF_INET6;
+    char ipv6[40];
+    convert_ipv6_addr(ipv6);
+    inet_pton(AF_INET6, ipv6, &addr_multi->sin6_addr);
+    (*addr_multi).sin6_port = htons(4321);
+    
+
+    int ifindex = if_nametoindex(interface);
+    
+    if(setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex, sizeof(ifindex))){
+        perror("erreur initialisation de l'interface locale.");
+    }
+}
+
+void increment_ipv6_addr(){
+    int i;
+    for(i = 15;i>=0;i--){
+        if(ipv6_addr[i] == 0xff){
+            ipv6_addr[i] = 0;
+        }
+        else {
+            ipv6_addr[i]++;
+            break;
+        }
+    }
+}
+
+void convert_ipv6_addr(char * ipv6){
+    int i, pos = 0;
+    for (i = 0;i<16;i++){
+        pos+= sprintf(&ipv6[pos], "%02x", ipv6_addr[i]);
+        if(i%2 == 1 && i !=15){
+            pos += sprintf(&ipv6[pos],":");
+        }
+    }
 }
