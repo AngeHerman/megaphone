@@ -47,17 +47,19 @@ void *serve(void *arg) {
             break;
         /*recevoir un fichier*/
         case 5:
-            rep = recevoir_fichier(sock,inscrits,fils,get_id_requete(entete));
+            rep = recevoir_fichier(&sock,inscrits,fils,get_id_requete(entete));
     }
     if(rep){//succès
         *ret = 1;
-        close(sock);
+        if(sock>=0)
+            close(sock);
         pthread_exit(ret);
     }
     //envoyer le message d'erreur
     envoie_message_erreur(sock);
     *ret=0;
-    close(sock);
+    if(sock>=0)
+        close(sock);
     pthread_exit(ret);
 }
 

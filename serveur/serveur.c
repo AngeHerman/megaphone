@@ -292,15 +292,7 @@ int creer_socket_udp(int* sock_udp, int* port){
     return 1;
 }
 
-
-void * serve_udp (void * arg){
-    udp_t infos_udp = *((udp_t*)arg);
-    int * file_len = malloc(sizeof(int));
-    *file_len = transmission_fichiers(infos_udp.sock, infos_udp.filename, infos_udp.id, infos_udp.numfil);
-    return file_len;
-}
-
-/*int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
+int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
         return 0;
@@ -308,14 +300,14 @@ void * serve_udp (void * arg){
     u_int16_t numfil;
     u_int16_t nb;
     u_int8_t datalen;
-    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
+    if (!lire_jusqua_datalen(*sock, &numfil, &nb, &datalen)){
         return 0;
     }
     if(nb!=0 || datalen==0)
         return 0;
     char* file_name= (char*)malloc(sizeof(char)*(datalen+1));
     memset(file_name, 0, datalen+1);
-    if (!lire_data(sock, datalen, file_name)){ // on met le texte du billet dans data
+    if (!lire_data(*sock, datalen, file_name)){ // on met le texte du billet dans data
         return 0;
     }
     // ajouter le billet
@@ -330,72 +322,23 @@ void * serve_udp (void * arg){
     if(!creer_socket_udp(sock_udp,&port_udp))
         return 0;
     
-    if(!annoncer_ecoute_pour_recevoir_fichier(sock,numfil,id,port_udp))
+    if(!annoncer_ecoute_pour_recevoir_fichier(*sock,numfil,id,port_udp))
         return 0;
+    //terminer la connexion
+    close(*sock);
+    *sock = -1;
     
     int file_len = transmission_fichiers(*sock_udp, file_name, id, numfil);
 
     char* billet_file=(char*)malloc(datalen+100);
+    if(!billet_file){
+        perror("malloc");
+        return 0;
+    }
+    memmset(billet_file,0,datalen+100);
     sprintf(billet_file,"fichier : %s, taille : %d", file_name, file_len);
     free(file_name);
     int ret = ajouter_billet_num(filst, numfil, pseudo, strlen(billet_file), billet_file);
     free(billet_file);
-    return ret;
-}*/
-
-/*tets*/
-int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
-    char pseudo[LEN_PSEUDO + 1];
-    if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
-        return 0;
-    }
-    u_int16_t numfil;
-    u_int16_t nb;
-    u_int8_t datalen;
-    if (!lire_jusqua_datalen(sock, &numfil, &nb, &datalen)){
-        return 0;
-    }
-    if(nb!=0 || datalen==0)
-        return 0;
-    char* file_name= (char*)malloc(sizeof(char)*(datalen+1));
-    memset(file_name, 0, datalen+1);
-    if (!lire_data(sock, datalen, file_name)){ // on met le texte du billet dans data
-        return 0;
-    }
-    // ajouter le billet
-    printf("file_name len : %d, file_name :%s\n", datalen, file_name);
-
-    int port_udp;
-    int * sock_udp = (int*)malloc(sizeof(int));
-    if(!sock_udp){
-        perror("malloc");
-        return 0;
-    }
-    if(!creer_socket_udp(sock_udp,&port_udp))
-        return 0;
-    
-    //creation d'un thread
-    pthread_t thread_udp;
-    udp_t * infos_udp = init_infos_udp(*sock_udp, file_name, id, numfil);
-    if(pthread_create(&thread_udp, NULL, serve_udp, infos_udp)==-1){
-        perror("pthread_create");
-        return 0;
-    }
-
-    if(!annoncer_ecoute_pour_recevoir_fichier(sock,numfil,id,port_udp))
-        return 0;
-
-    int * file_len;
-    pthread_join(thread_udp, (void**)&file_len);
-    free(infos_udp);
-    //creation du billet pour le fichier 
-    char* billet_file=(char*)malloc(datalen+100);
-    sprintf(billet_file,"fichier : %s, taille : %d", file_name, *file_len);
-    free(file_name);
-
-    //ajout du billet
-    int ret = ajouter_billet_num(filst, numfil, pseudo, strlen(billet_file), billet_file);
-    free(billet_file);
-
     return ret;
 }

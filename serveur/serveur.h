@@ -47,5 +47,5 @@ int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t i
 int lire_jusqua_datalen(int sock, uint16_t *numfil, uint16_t *nb, uint8_t *datalen);
 
 int lire_data(int sock, uint8_t datalen, char *data);
-int recevoir_fichier(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
+int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
 #endif
