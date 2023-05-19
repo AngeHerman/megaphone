@@ -8,14 +8,13 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 #include "client.h"
 #include "messages_client.h"
 #include "../lecture.h"
 #include "reponses_serveur.h"
-
-
-
+#include "abonnement.h"
 
 void affiche_adresse(struct sockaddr_in6 *adr){
     char adr_buf[INET6_ADDRSTRLEN];
@@ -25,7 +24,7 @@ void affiche_adresse(struct sockaddr_in6 *adr){
     printf("adresse serveur : IP: %s port: %d\n", adr_buf, ntohs(adr->sin6_port));
 }
 
-int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6** addr, int* addrlen) {
+int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6* addr, int* addrlen) {
     struct addrinfo hints, *r, *p;
     int ret;
     //memset(&hints, 0, sizeof(hints));
@@ -51,7 +50,7 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
     }
 
     if (NULL == p) return -2;
-    *addr = (struct sockaddr_in6 *) p->ai_addr;
+    *addr = *((struct sockaddr_in6 *)p->ai_addr);
     freeaddrinfo(r);
     return 0;
 }
@@ -139,6 +138,24 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
     return 1;
 }
 
+int sabonner_au_fil(struct in6_addr addr_diffus, uint16_t port){
+    info_abonn* infos = malloc(sizeof(info_abonn));
+    if(!infos){
+        perror("malloc");
+        return 0;
+    }
+    infos->addr_diffus = addr_diffus;
+    infos->port = port;
+
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, abonnement, infos) == -1) {
+        perror("pthread_create");
+        free(infos);
+        return 0;
+    }  
+    return 1;
+}
+
 int demande_abonnement(int sock,u_int16_t id_client,uint16_t numfil){
     char * mess_abonnement_fil = message_abonnement_fil(id_client,numfil);
     if(send(sock, mess_abonnement_fil,LEN_MESS_CLIENT,0) != LEN_MESS_CLIENT){
@@ -150,14 +167,11 @@ int demande_abonnement(int sock,u_int16_t id_client,uint16_t numfil){
     memset(data,0,NB_OCTECS_REPONSES_ABONNEMENT);
     if (!get_data(data,NB_OCTECS_REPONSES_ABONNEMENT,sock))
         return 0;
-    char addr[17];
-    memset(addr,0,17);
-    uint16_t *port;
-    if(!reponse_abonnement(data,addr,port))
+    struct in6_addr addr_diffus;
+    uint16_t port;
+    if(!reponse_abonnement(data, &addr_diffus, &port, id_client, numfil))
         return 0;
-    printf("port est %d\n",*port);
-    printf("addr est %s\n",addr);
-    return 1;
+    return sabonner_au_fil(addr_diffus, port);
 }
 
 
@@ -273,7 +287,7 @@ int envoi_fichier(uint16_t id, uint16_t port,char * nom_fichier,char * hostname)
     if(taille_fic == 0)
         return 0;
     if(taille_fic >= TAILLE_MAX_AJOUT_FICHIER){
-        printf("Fichier trop gros, taille max est %d\n",TAILLE_MAX_AJOUT_FICHIER);
+        fprintf(stderr,"Fichier trop gros, taille max est %d\n",TAILLE_MAX_AJOUT_FICHIER);
         return 0;
     }
     if(!envoi_par_paquets_de_512(fd,sockUDP,id,taille_fic,server_addr,adrlen)){

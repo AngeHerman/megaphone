@@ -8,15 +8,17 @@
 
 #include "client.h"
 #include "interaction.h"
+#include "abonnement.h"
 
 
 
 int inscrire_client(int sock){
     char pseudo[11];
-    memset(pseudo, '#', 10);
+    memset(pseudo, 0, 11);
     printf("Entrez votre pseudo (entre 1 et 10 caractères) :\n");
-    scanf("%s", pseudo);
-    pseudo[10] = '\0';
+    fgets(pseudo,11,stdin);
+    memset(pseudo+strlen(pseudo)-1, '#', 10-strlen(pseudo)+1);
+    printf("pseudo : %s\n", pseudo);
 
     uint16_t id = demande_inscription(sock, pseudo);
     if(id){
@@ -60,15 +62,21 @@ int poster_billet(int sock){
 int demader_billets(int sock){
     int id;
     int numfil;
-    int nb;
+    int nb_billets;
+    char nb[7]={0};
     printf("Entrez votre id :\n");
-    scanf("%d", &id);
-    printf("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
-    scanf("%d", &numfil);
+    fgets(nb,7,stdin);
+    id = atoi(nb);
+    memset(nb,0,sizeof(nb));
+    printf("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
+    fgets(nb,7,stdin);
+    numfil = atoi(nb);  
+    memset(nb,0,sizeof(nb));
     printf("Entrez le nombre de billet voulu :\n");
-    scanf("%d", &nb);
+    fgets(nb,7,stdin);
+    nb_billets = atoi(nb);
     
-    int res = demande_dernier_billets(sock, id, numfil, nb);
+    int res = demande_dernier_billets(sock, id, numfil, nb_billets);
     if(res==0){
         fprintf(stderr,"La demande a échouée\n");
         return 0;
@@ -81,12 +89,15 @@ int abonnement_fil(int sock){
 	int id;
 	int numfil;
 
+    char nb[7]={0};
 	printf("Entrez votre id :\n");
-	scanf("%d", &id);
+    fgets(nb,7,stdin);
+    id = atoi(nb);
+    memset(nb,0,sizeof(nb));
 	printf("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
-	scanf("%d", &numfil);
-
-
+    fgets(nb,7,stdin);
+    numfil = atoi(nb);  
+    return demande_abonnement(sock, id, numfil);
 }
 
 int ajouter_fichier(int sock,char* hostname){
@@ -131,8 +142,9 @@ int choix_client(int sock,char* hostname){
 	char abonnement[] = "Tapez 4 pour vous abonner à un fil\n";
 	char ajout_fichier[] = "Tapez 5 pour ajouter un fichier sur un fil\n";
 	char tlc_fichier[] = "Tapez 6 pour telecharger un fichier\n";
-
+    pthread_mutex_lock(&verrou_affichage);
 	printf("%s%s%s%s%s%s", inscription, poster_un_billet, demande_billets,abonnement,ajout_fichier,tlc_fichier);
+    pthread_mutex_unlock(&verrou_affichage);
 	int rep_client;
 	char rep_s[3] = {0};
 	fgets(rep_s, 3, stdin);

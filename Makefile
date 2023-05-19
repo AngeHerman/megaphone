@@ -1,13 +1,15 @@
-main_client : main_serveur bin/main_client.o bin/messages_client.o bin/reponses_serveur.o bin/client.o bin/interaction.o bin/lecture.o
-	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o -o main_client 
+main_client : main_serveur bin/main_client.o bin/messages_client.o bin/reponses_serveur.o bin/client.o bin/interaction.o bin/lecture.o bin/abonnement.o
+	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o bin/abonnement.o -o main_client 
 bin/main_client.o : client/main_client.c client/client.h 
 	gcc -c client/main_client.c -o bin/main_client.o
-bin/client.o : client/client.c client/client.h client/messages_client.h
+bin/client.o : client/client.c client/client.h client/messages_client.h lecture.h
 	gcc -c client/client.c -o bin/client.o
 bin/interaction.o : client/interaction.c client/client.h client/interaction.h
 	gcc -c client/interaction.c -o bin/interaction.o
 bin/messages_client.o : client/messages_client.c client/messages_client.h
 	gcc -c client/messages_client.c -o bin/messages_client.o
+bin/abonnement.o : client/abonnement.c client/abonnement.h client/reponses_serveur.h lecture.h
+	gcc -c client/abonnement.c -o bin/abonnement.o
 bin/reponses_serveur.o : client/reponses_serveur.c client/reponses_serveur.h
 	gcc -c client/reponses_serveur.c -o bin/reponses_serveur.o
 

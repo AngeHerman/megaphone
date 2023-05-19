@@ -39,7 +39,7 @@ void envoie_message_erreur(int sock);
  * lit le message restant du client et poste le billet puis envoie la confirmation au client
  * @return numéro de fil ou 0 en cas d'echec
 */
-int poster_un_billet(int sock,inscrits_t * inscrits,fils_t * fils, uint16_t id, char * interface);
+int poster_un_billet(int sock,inscrits_t * inscrits,fils_t * fils, uint16_t id);
 
 int demander_des_billets(int sock,inscrits_t *inscrits,fils_t * filst,uint16_t id);
 

@@ -86,44 +86,49 @@ u_int8_t reponse_derniers_billets_datalen(char* rep){
 	return datalen;
 }
 
-int reponse_abonnement(char *rep,char *addr,uint16_t *port){
-    uint8_t cod_req;
-	uint16_t id;
-	u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
-	u_int16_t port_multidiff = ntohs(((uint16_t *)rep)[2]);
+int reponse_abonnement(char *rep,struct in6_addr *addr,uint16_t *port, uint16_t id_client, uint16_t num_fil){
+	u_int16_t numfil_rec = ntohs(((uint16_t *)rep)[1]);
 	u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
 	u_int16_t masque = 0b0000000000011111;
-	cod_req = entete & masque;
-	id = (entete & ~masque) >> 5;
-    if(cod_req!= CODE_REQ_ABONNEMENT_FIL){
+	uint8_t cod_req = entete & masque;
+	uint16_t id = (entete & ~masque) >> 5;
+	
+    if(cod_req!= CODE_REQ_ABONNEMENT_FIL || id!= id_client || num_fil != numfil_rec){
 		fprintf(stderr, "reponse de abonnement erroné et le code reçu est %d\n",cod_req);
 		return 0;
 	}
-    memmove(addr,rep+6,16);
-    uint16_t *addr_u;
-    for(int i = 0; i < 8; i++ ){
-        addr_u[i] = ntohs( ((uint16_t *)addr)[i] );
-    }
-    memmove(addr,addr_u,16);
-    *port = port_multidiff;
+	*port = ((uint16_t *)rep)[2];
+	*addr = *((struct in6_addr*) (rep+6));
     return 1;
-
 }
 
 uint16_t reponse_ajout_fichier(char * rep){
-    uint8_t cod_req;
-	uint16_t id;
 	u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
 	u_int16_t port = ntohs(((uint16_t *)rep)[2]);
 	u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
 	u_int16_t masque = 0b0000000000011111;
-	cod_req = entete & masque;
-	id = (entete & ~masque) >> 5;
-
+	uint8_t cod_req = entete & masque;
+	uint16_t id = (entete & ~masque) >> 5;
 
 	if(cod_req!= CODE_REQ_AJOUT_FICHIER){
 		fprintf(stderr, "reponse ajout fichier est erroné et le code reçu est %d\n",cod_req);
 		return 0;
 	}
 	return port;
+}
+
+int notification(char * mess_notif, uint16_t * numfil, char * pseudo, char * data){
+	uint16_t entete = ntohs(((uint16_t *)mess_notif)[0]);
+	u_int16_t masque = 0b0000000000011111;
+	uint8_t cod_req = entete & masque;
+	uint16_t id = (entete & ~masque) >> 5;
+
+	if(cod_req!= CODE_NOTIFICATION || id!=0){
+		fprintf(stderr, "notification erronée, le code reçu est %d et l'id est %d\n",cod_req, id);
+		return 0;
+	}
+	*numfil = ntohs(((uint16_t *)mess_notif)[1]);
+	memmove(pseudo, mess_notif+4, 10);
+	memmove(data, mess_notif+14, 20);
+	return 1;
 }

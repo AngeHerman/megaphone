@@ -10,9 +10,6 @@
 #define TAILLE_MAX_STRING 4096 //taille maximale des char *
 
 
-
-
-
 /**
  *  @brief  l'adresse du server ainsi que le port sur le client s'est connecté 
 */
@@ -21,7 +18,7 @@ void affiche_adresse(struct sockaddr_in6 *adr);
 /**
  *  @brief  Tente de connecter le client au sserveur puis renvoie un entier spécifiant si la connexion a réussi ou non 
 */
-int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6** addr, int* addrlen);
+int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6* addr, int* addrlen);
 
 int get_server_addrudp(char* hostname, char* port, int * sock_udp, struct sockaddr_in6* addr, int* addrlen) ;
 
@@ -80,7 +77,6 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
  * @return 0 en cas d'échec, 1 si le fichier a été envoyé
 */
 int envoi_fichier(uint16_t id, uint16_t port,char * nom_fichier,char * hostname);
-
 
 
 #endif

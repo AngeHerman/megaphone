@@ -14,6 +14,8 @@
 #include "messages_serveur.h"
 #include "../fichiers.h"
 
+#define NB_OCTECS_REPONSES_ABONNEMENT 22//code_req et ID (2 otects)+Numfil (2 otects)+nb (2) + adresse(16)
+
 typedef struct udp{
     int sock;
     char * filename;
@@ -170,7 +172,7 @@ int confirmer_ajout_billet(int sock, uint16_t numfil, u_int16_t id)
     return 1;
 }
 
-int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id, char * interface)
+int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id)
 {
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
@@ -191,7 +193,7 @@ int poster_un_billet(int sock, inscrits_t *inscrits, fils_t *fils, uint16_t id, 
     // ajouter le billet
     printf("datalen : %d, data :%s\n", datalen, data);
     if (numfil == 0){ // on ajoute le billet dans un nouveau fil
-        fil_t *fil = ajouter_nouveau_fil(fils, pseudo, interface);
+        fil_t *fil = ajouter_nouveau_fil(fils, pseudo);
         if (!fil)
             return 0;
         ajouter_billet(fil, pseudo, datalen, data);
@@ -344,16 +346,35 @@ int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id
 }
 
 int confirmer_abonnement(int sock, fils_t* filst,uint16_t numfil, u_int16_t id){
-    struct sockaddr_in6 addr_mult = get_addr_multi(filst,numfil);
-    char *mess = message_server(4, id, numfil, addr_mult.sin6_port);
+    struct sockaddr_in6 addr_multi;
+    int r = abonner_fil(filst, numfil, &addr_multi);
+    if(r==0)
+        return 0;
+    char *mess = message_confirmer_abonnement(id, numfil, addr_multi);
     if (!mess)
         return 0;
-    if (send(sock, mess, SIZE_MESS_SERV, 0) != SIZE_MESS_SERV)
+    if (send(sock, mess, NB_OCTECS_REPONSES_ABONNEMENT, 0) != NB_OCTECS_REPONSES_ABONNEMENT)
     {
         free(mess);
         return 0;
     }
     free(mess);
+    if(r==2){//on lance la multidifusion
+        info_multi* infos = malloc(sizeof(info_multi));
+        if(!infos){
+            perror("malloc");
+            return 0;
+        }
+        infos->fils = filst;
+        infos->numfil = numfil;
+        infos->addr_multi = addr_multi;
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, multi_diffusion, infos) == -1) {
+            perror("pthread_create");
+            free(infos);
+            return 0;
+        }     
+    }
     return 1;
 }
 
@@ -369,5 +390,7 @@ int abonner_a_fil(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
         return 0;
     }
     
-    return confirmer_abonnement(sock, filst, numfil, id);
+    int r = confirmer_abonnement(sock, filst, numfil, id);
+    printf("retour: %d\n", r);
+    return r;
 }

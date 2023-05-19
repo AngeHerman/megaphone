@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "fils.h"
 #include "messages_serveur.h"
@@ -15,7 +16,8 @@
 #define TRUE 1
 
 pthread_mutex_t verrou_billets = PTHREAD_MUTEX_INITIALIZER;
-uint8_t ipv6_addr[16] = {0xff,0x12,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+uint16_t dernier_entier_ipv6 =  0x0001;
+uint16_t dernier_port_multi = 4321;
 
 fils_t * creer_list_fils(){
     fils_t * res = (fils_t*) malloc(sizeof(fils_t));
@@ -64,6 +66,9 @@ fil_t copy_fil(fil_t  f){
     res.nb_billets = f.nb_billets;
     res.capacite = f.nb_billets;
     res.num_fil = f.num_fil;
+    res.addr_multi = f.addr_multi;
+    res.a_abonne = f.a_abonne;
+    res.derniere_notif = f.derniere_notif;
     memmove(res.origine,f.origine,LEN_PSEUDO);
     res.origine[LEN_PSEUDO]='\0';
     res.billets = (billet_t *)malloc(sizeof(billet_t)*f.nb_billets);
@@ -100,7 +105,7 @@ void free_fil(fil_t fil){
     free(fil.billets);
 }
 
-fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig, char * interface){
+fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
     pthread_mutex_lock(&verrou_billets);
     if(fs->nb_fils == 65535){//il n'y a plus de place
         fprintf(stderr ,"nombre max de fils atteint");
@@ -119,6 +124,7 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig, char * interface){
         fs->capacite *= 2;
     }
     fil_t f;
+    memset(&f, 0, sizeof(f));
     f.num_fil = fs->nb_fils+1;
     memmove(f.origine, orig, LEN_PSEUDO * sizeof(char));
     f.origine[LEN_PSEUDO]='\0';
@@ -137,9 +143,9 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig, char * interface){
     if(mkdir(path,0777)<0){
         perror("mkdir");
     }
+    fil_t * res = fs->fils + (fs->nb_fils-1);
     pthread_mutex_unlock(&verrou_billets);
-    creer_multidif(&f.socket,&f.addr_multi,interface);
-    return fs->fils + (fs->nb_fils-1);
+    return res;
 }
 
 int ajouter_billet(fil_t * fil, char * pseu, uint8_t len, char* text_billet){
@@ -275,52 +281,92 @@ int get_messages(fils_t * fils, uint16_t numfil, uint16_t nb, char*** messages, 
     return 1;
 }
 
-struct sockaddr_in6 get_addr_multi(fils_t * fils, uint16_t numfil){
-    return (fils->fils[numfil-1]).addr_multi;
-}
-
-int creer_multidif(int * sock, struct sockaddr_in6 * addr_multi,char * interface){
-    *sock = socket(AF_INET6, SOCK_DGRAM, 0);
-    int ok = 1;
-    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &ok, sizeof(ok)) < 0) {
-        perror("echec de SO_REUSEADDR");
-        close(sock);
+int abonner_fil(fils_t * fils, uint16_t numfil, struct sockaddr_in6 * addr_multi){
+    if(numfil>fils->nb_fils) {//le fil n'existe pas
+        return 0;
+    }
+    if(fils->fils [numfil-1].a_abonne){// le fil a déjà une adresse de multidifusion
+        *addr_multi = fils->fils[numfil-1].addr_multi;
         return 1;
     }
-    memset(addr_multi, 0, sizeof(*addr_multi));
-    (*addr_multi).sin6_family = AF_INET6;
-    char ipv6[40];
-    convert_ipv6_addr(ipv6);
-    inet_pton(AF_INET6, ipv6, &addr_multi->sin6_addr);
-    (*addr_multi).sin6_port = htons(4321);
-    
-
-    int ifindex = if_nametoindex(interface);
-    
-    if(setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex, sizeof(ifindex))){
-        perror("erreur initialisation de l'interface locale.");
-    }
+    // on crée l'adresse 
+    fils->fils[numfil-1].addr_multi.sin6_family = AF_INET6;
+    fils->fils[numfil-1].addr_multi.sin6_port = htons(dernier_port_multi);
+    dernier_port_multi++;
+    char ipv6[INET6_ADDRSTRLEN] = {0};
+    sprintf(ipv6, "ff12:%x::", dernier_entier_ipv6);
+    inet_pton(AF_INET6, ipv6, &(fils->fils[numfil-1].addr_multi.sin6_addr));
+    dernier_entier_ipv6++;
+    *addr_multi = fils->fils[numfil-1].addr_multi;
+    fils->fils[numfil-1].a_abonne = 1;
+    return 2;
 }
 
-void increment_ipv6_addr(){
-    int i;
-    for(i = 15;i>=0;i--){
-        if(ipv6_addr[i] == 0xff){
-            ipv6_addr[i] = 0;
+int get_notif(fils_t * copy_fils, uint16_t numfil, char *** notifs, uint16_t* nb_notifs){
+    fil_t f = copy_fils->fils[numfil-1];
+    *nb_notifs =f.nb_billets - f.derniere_notif;
+    if(*nb_notifs>0){
+        *notifs = malloc(*nb_notifs * sizeof(char*));
+        if(!*notifs){
+            perror("malloc");
+            return 0;
         }
-        else {
-            ipv6_addr[i]++;
-            break;
+        memset(*notifs,0,*nb_notifs * sizeof(char*));
+        int j=0;
+        for(int i = f.derniere_notif; i<f.nb_billets; i++){
+            (*notifs)[j] = message_notif(numfil,f.billets[i].pseudo, f.billets[i].data);
+            j++;
         }
     }
+    return 1;
 }
 
-void convert_ipv6_addr(char * ipv6){
-    int i, pos = 0;
-    for (i = 0;i<16;i++){
-        pos+= sprintf(&ipv6[pos], "%02x", ipv6_addr[i]);
-        if(i%2 == 1 && i !=15){
-            pos += sprintf(&ipv6[pos],":");
+void free_notifs(char ** notifs, uint16_t nb_notifs){
+    for(int i=0; i<nb_notifs; i++){
+        if(notifs[i])
+            free(notifs[i]);
+    }
+    free(notifs);
+}
+
+void * multi_diffusion(void * args){
+    info_multi infos = *((info_multi*)args);
+    free((info_multi*)args);
+    
+    /* créer la socket */
+    int sock;
+    if((sock = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
+        perror("erreur socket");
+        return NULL;
+    }
+    
+    /* initialisation de l'interface locale autorisant le multicast IPv6 */
+    int ifindex = 0;
+    if(setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex, sizeof(ifindex))) {
+        perror("erreur initialisation de l'interface locale");
+        return NULL;
+    }
+
+    while(1){
+        sleep(60);
+        fils_t* copy_fils = copy_list_fils(infos.fils);
+        char ** notifs=NULL;
+        uint16_t nb_notifs=0;
+        if(!get_notif(copy_fils, infos.numfil, &notifs, &nb_notifs)){
+            free_fils(copy_fils);
+            continue;
         }
+        pthread_mutex_lock(&verrou_billets);
+        infos.fils->fils[infos.numfil-1].derniere_notif+=nb_notifs;
+        pthread_mutex_unlock(&verrou_billets);
+        if(nb_notifs>0){
+            for(int i=0; i<nb_notifs; i++){
+                if(notifs[i]){
+                    sendto(sock,notifs[i], 34, 0, (struct sockaddr *)&(infos.addr_multi), sizeof(infos.addr_multi));
+                }
+            }
+            free_notifs(notifs, nb_notifs);
+        }
+
     }
 }

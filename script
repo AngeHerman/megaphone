@@ -1,5 +1,0 @@
-printf "1\nMouloud\n" | ./main_client localhost 7778
-printf "2\n1\n0\nmess1\n" | ./main_client localhost 7778
-#printf "2\n1\n0\nmess2\n" | ./main_client localhost 7777
-printf "5\n1\n1\nbien_court.pdf\n" | ./main_client localhost 7778
-#printf "5\n1\n2\ntest.txt\n" | ./main_client localhost 7777

@@ -11,6 +11,7 @@
 #define CODE_REQ_P0STER_BILLET 2 //code_req pour poster un billet
 #define CODE_REQ_DEMANDE_BILLETS 3 //code_req pour la demande des billets
 #define CODE_REQ_ABONNEMENT_FIL 4 //code_req pour l'abonnement à un
+#define CODE_NOTIFICATION 4 //code pour les notifications envoyées par le serveur
 #define CODE_REQ_AJOUT_FICHIER 5 //code_req pour l'ajout de fichier
 #define CODE_REQ_TELECHARGER_FICHIER 6 //code_req pour le telechargement de fichier
 

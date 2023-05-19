@@ -27,7 +27,6 @@ char * message_server(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
     //les autres champs
     ((uint16_t *)res)[1] = htons(numfil);
     ((uint16_t *)res)[2] = htons(nb);
-    //TODO : numfil et nb pour code_req 2&3
     return res;
 }
 
@@ -43,17 +42,30 @@ char * message_billet(uint16_t numfil, char* origine, char* pseudo, uint8_t data
     return res;
 }
 
-char * message_abo(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t nb, struct sockaddr_in6 addr_mult){
-    char * res = (char*)malloc(sizeof(char) * 22);
-    if(res==NULL)
+char * message_notif(uint16_t numfil, char* pseudo, char* data){
+    char * res = (char*)malloc(sizeof(char) * (34));
+    if(!res)
         return NULL;
-    
+    memset(res,0,sizeof(char)*34);
+    ((uint16_t *)res)[0] = entete_message(4,0);
+    ((uint16_t *)res)[1] = htons(numfil);
+    memmove(res+4,pseudo,LEN_PSEUDO);
+    memmove(res+14,data,20);
+    return res;
+}
+
+char * message_confirmer_abonnement(uint16_t id, uint16_t numfil, struct sockaddr_in6 addr_mult){
+    char * res = (char*)malloc(sizeof(char) * 22);
+    if(res==NULL){
+        perror("malloc");
+        return NULL;
+    }
     //remplir l'entête
-    ((uint16_t *)res)[0] = entete_message(code_req,id);
+    ((uint16_t *)res)[0] = entete_message(4,id);
     //les autres champs
     ((uint16_t *)res)[1] = htons(numfil);
-    ((uint16_t *)res)[2] = htons(nb);
-    res[3]= htons(&addr_mult.sin6_addr);
+    ((uint16_t *)res)[2] = addr_mult.sin6_port;
+    *((struct in6_addr *)(res+6))= addr_mult.sin6_addr ;
     return res;
 }
 

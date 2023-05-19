@@ -63,4 +63,6 @@ uint8_t get_code_req(uint16_t entete);
  */
 uint16_t get_id_requete(uint16_t entete);
 
+char * message_confirmer_abonnement(uint16_t id, uint16_t numfil, struct sockaddr_in6 addr_mult);
+char * message_notif(uint16_t numfil, char* pseudo, char* data);
 #endif

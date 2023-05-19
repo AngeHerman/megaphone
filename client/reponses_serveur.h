@@ -36,7 +36,7 @@ u_int8_t reponse_derniers_billets_datalen(char* rep);
  * @param addr la variable où sera stockée l'adresse de multidiffusion
  * @return l'adresse d'abonnement envoyé par le serveur
 */
-int reponse_abonnement(char *rep,char *addr,uint16_t *port);
+int reponse_abonnement(char *rep,struct in6_addr *addr,uint16_t *port, uint16_t id_client, uint16_t num_fil);
 
 /**
  * @brief verifie que la réponse du serveur respecte le bon format et renvoie le numero de port UDP
@@ -45,5 +45,17 @@ int reponse_abonnement(char *rep,char *addr,uint16_t *port);
 */
 uint16_t reponse_ajout_fichier(char * rep);
 
+/**
+ * @brief verifie que le message de notification respecte le bon format
+ * et extrait les inforations qu'il contient 
+ * 
+ * @param mess_notif le message de la notification
+ * @param numfil[out] le numéro de fil
+ * @param pseudo[out] le pseudo du billet
+ * @param data[out] les 20 premiers octets du billet
+ *
+ * @return 1 en cas de succes et 0 sinon
+ */
+int notification(char * mess_notif, uint16_t * numfil, char * pseudo, char * data);
 
 #endif

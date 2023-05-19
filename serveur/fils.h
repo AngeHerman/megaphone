@@ -15,8 +15,9 @@ typedef struct fil_t{
     billet_t * billets; //tableau des billets postés sur le fil
     int nb_billets; // le nombre de billets sur le fil
     int capacite; // capacite du tableau billets
-    int socket; // socket du multidiffuseur
     struct sockaddr_in6 addr_multi; // la structure du multidiffuseur
+    int a_abonne;//1 si le fil a au moins un abonné, 0 sinon
+    int derniere_notif;//le numero du dernier billet envoyé par une notification, 0 si aucun billet n'a encore été envoyé
 }fil_t;
 
 typedef struct fils_t{
@@ -24,6 +25,12 @@ typedef struct fils_t{
     int capacite; // longueur effective du tableau de fils
     fil_t * fils; // tableau de fils
 }fils_t;
+
+typedef struct info_multi{
+    fils_t * fils;
+    uint16_t numfil;
+    struct sockaddr_in6 addr_multi;
+}info_multi;
 
 /**
  * @brief crée une liste de fils vide de capacité CAP_FILS_INIT
@@ -52,7 +59,7 @@ void free_fil(fil_t fil);
  * @param orig initiateur du fil
  * @return fil_t* le nouveau fil crée ou NULL en cas d'erreur
  */
-fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig,char * interface);
+fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig);
 
 /**
  * @brief poster un billet sur le fil `fil`
@@ -98,4 +105,8 @@ void free_messages_billets(char** messages, uint16_t nb_mess);
 fils_t * copy_list_fils(fils_t * fs);
 fil_t copy_fil(fil_t  f);
 billet_t copy_billet(billet_t b);
+
+
+int abonner_fil(fils_t * fils, uint16_t numfil, struct sockaddr_in6 * addr_multi);
+void * multi_diffusion(void * args);
 #endif

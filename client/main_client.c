@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
         sprintf(hostname,"%s",argv[1]);
         sprintf(port,"%s",argv[2]);
     }
-    struct sockaddr_in6* server_addr;
+    struct sockaddr_in6 server_addr;
     int fdsock, adrlen;
 
     switch (get_server_addr(hostname,port, &fdsock, &server_addr, &adrlen)) {
@@ -39,11 +39,21 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    int ret=1;
-    //demander au client l'action voulue et l'exécuter
-    if(choix_client(fdsock,hostname))
-        ret = 0;
-
-    close(fdsock);
+    int ret;
+    while(1){
+        if(fdsock==-1){
+            if((fdsock = socket(PF_INET6, SOCK_STREAM, 0)) > 0){
+                if(connect(fdsock,(struct sockaddr *) &server_addr, sizeof(server_addr)) ==-1 )
+                    break;
+            }
+            else
+                break;
+        }
+        //demander au client l'action voulue et l'exécuter
+        ret = choix_client(fdsock,hostname);
+        
+        close(fdsock);
+        fdsock = -1;
+    }
     return ret;
 }
