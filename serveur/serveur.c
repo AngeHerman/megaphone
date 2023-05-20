@@ -294,6 +294,19 @@ int creer_socket_udp(int* sock_udp, int* port){
     return 1;
 }
 
+int annoncer_ecoute_pour_recevoir_fichier(int sock, uint16_t numfil, uint8_t id, uint16_t port){
+    char *mess = message_server(5, id, numfil, port);
+    if (!mess)
+        return 0;
+    if (send(sock, mess, SIZE_MESS_SERV, 0) != SIZE_MESS_SERV)
+    {
+        free(mess);
+        return 0;
+    }
+    free(mess);
+    return 1;
+}
+
 int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
     char pseudo[LEN_PSEUDO + 1];
     if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
@@ -330,7 +343,7 @@ int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id
     close(*sock);
     *sock = -1;
     
-    int file_len = transmission_fichiers(*sock_udp, file_name, id, numfil);
+    int file_len = reception_par_paquets_de_512(*sock_udp, file_name, id, numfil);
 
     char* billet_file=(char*)malloc(datalen+100);
     if(!billet_file){

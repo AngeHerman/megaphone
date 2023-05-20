@@ -20,8 +20,6 @@ void affiche_adresse(struct sockaddr_in6 *adr);
 */
 int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6* addr, int* addrlen);
 
-int get_server_addrudp(char* hostname, char* port, int * sock_udp, struct sockaddr_in6* addr, int* addrlen) ;
-
 /**
  *  @brief Demande au serveur les derniers billets selon les parametres 
 */
@@ -57,26 +55,8 @@ int get_data(char *data,int taille,int sock);
  * @brief ajoue le fichier de nom data au fil f
  * @return 0 en cas d'échec, le numéro du fil sur lequel le fichier a été posté sinon
 */
-uint16_t ajouter_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t taille_nom_fichier, char * nom_fichier,char * hostname);
+uint16_t ajouter_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t taille_nom_fichier, char * nom_fichier,char * hostname, char* file_path);
 
-
-/**
- * @brief Renvoie la taille du fichier file_name
- * @return 0 en cas d'échec, la taille du fichier sinon
-*/
-long int taille_fichier(char *file_name);
-
-/**
- * @brief Envoie le fichier par paquets de 512
- * @return 0 en cas d'échec, 1 si tout s'est bien passé
-*/
-int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sockaddr_in6 addr, int adrlen);
-
-/**
- * @brief ajoue le fichier data au serveur sur le port
- * @return 0 en cas d'échec, 1 si le fichier a été envoyé
-*/
-int envoi_fichier(uint16_t id, uint16_t port,char * nom_fichier,char * hostname);
 
 
 #endif

@@ -100,14 +100,36 @@ int abonnement_fil(int sock){
     return demande_abonnement(sock, id, numfil);
 }
 
+char * get_file_name(char * path){
+    if(path==NULL || strlen(path)<1)
+        return NULL;
+    int i;
+    for(i = strlen(path)-1; i>0; i--){
+        if(path[i]=='/')
+            break;
+    }
+    if(path[i]=='/')
+        i++;
+    if(i>=strlen(path)-1)
+        return NULL;
+    char * res = (char *) malloc(sizeof(char) * (strlen(path)-i+1));
+    memset(res, 0, sizeof(char) * (strlen(path)-i+1));
+    if(!res){
+        perror("malloc");
+        return NULL;
+    }
+    memmove(res, path+i,strlen(path)-i);
+    return res;
+}
+
 int ajouter_fichier(int sock,char* hostname){
 	int id;
 	int numfil;
 	uint8_t datalen;
-	char file_name[255+1];
+	char file_path[255+1];
     char tmp[255+1+1];
     char nb[7];
-    memset(file_name,0,sizeof(file_name));
+    memset(file_path,0,sizeof(file_path));
     memset(tmp,0,sizeof(tmp));
     
     printf("Entrez votre id :\n");
@@ -117,12 +139,17 @@ int ajouter_fichier(int sock,char* hostname){
     printf("Entrez le numéro du fil où envoyer le fichier :\n");
     fgets(nb,7,stdin);
     numfil = atoi(nb);
-    printf("Entrez le nom du fichier à envoyer :\n");
+    printf("Entrez le chemin du fichier à envoyer :\n");
     fgets(tmp, 257, stdin);
-    memmove(file_name,tmp,strlen(tmp)-1);//enlever le '\n'
+    memmove(file_path,tmp,strlen(tmp)-1);//enlever le '\n'
+    char * file_name = get_file_name(file_path);
+    if(!file_name){
+        fprintf(stderr,"erreur path\n");
+        return 0;
+    }
     datalen = strlen(file_name);
-    
-	uint16_t res = ajouter_un_fichier(sock, id, numfil, datalen, file_name, hostname);
+	uint16_t res = ajouter_un_fichier(sock, id, numfil, datalen, file_name, hostname, file_path);
+    free(file_name);
     if(res==0){
         fprintf(stderr,"Le fichier n'a pas été ajouté\n");
         return 0;

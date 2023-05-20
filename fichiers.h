@@ -4,7 +4,14 @@
 
 #include "serveur/inscrits.h"
 #include "serveur/fils.h"
-#define LEN_PAQUET 512 
+
+#define TAILLE_PAQUET_UDP 512
+#define CODE_REQ_AJOUT_FICHIER 5 //code_req pour l'ajout de fichier
+
+#define SIZE_MESS_SERV 6
+
+#define TAILLE_MAX_STRING 4096 //taille maximale des char *
+#define TAILLE_MAX_AJOUT_FICHIER 33554432 //en octets
 
 typedef struct bloc{
     uint16_t num_bloc;
@@ -22,17 +29,6 @@ typedef struct fic{
     bloc_t * blocs; //liste chaînée des blocs constituant le fichier
 }fic_t;
 
-/**
- * @brief envoie au client le numéro de port sur lequel le serveur recevra les paquets UDP
- * 
- * @param sock socket de communication tcp
- * @param numfil numfil demandé par le client
- * @param id identifiant du client
- * @param port le numéro de port sur lequel le serveur recevra les paquets UDP
-
- * @return int 1 en cas de succes, 0 en cas de d'erreur
- */
-int annoncer_ecoute_pour_recevoir_fichier(int sock, uint16_t numfil, uint8_t id, uint16_t port);
 
 /**
  * @brief 
@@ -43,7 +39,27 @@ int annoncer_ecoute_pour_recevoir_fichier(int sock, uint16_t numfil, uint8_t id,
  * @param numfil numéro de fil sur lequel poster le fichier
  * 
  * @return int taille du fichier reçu, ou -1 en cas d'erreur 
- */
-int transmission_fichiers(int sock_udp,char * name_file,uint16_t id, uint16_t numfil);
+*/
+int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uint16_t numfil);
+
+/**
+ * @brief Envoie le fichier par paquets de 512
+ * @return 0 en cas d'échec, 1 si tout s'est bien passé
+*/
+int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sockaddr_in6 addr, int adrlen);
+
+/**
+ * @brief ajoue le fichier de chemin file_path sur le port port et adresse de nom hostname
+ * @return 0 en cas d'échec, 1 si le fichier a été envoyé
+*/
+int envoi_fichier(uint16_t id, uint16_t port,char * file_path,char * hostname);
+
+/**
+ * @brief Renvoie la taille du fichier file_name
+ * @return 0 en cas d'échec, la taille du fichier sinon
+*/
+long int taille_fichier(char *file_name);
+
+
 
 #endif

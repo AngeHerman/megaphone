@@ -59,25 +59,7 @@ char * message_client(uint16_t code_req, uint16_t id, uint16_t numfil, uint16_t 
 	return res;
 }
 
-char * message_client_udp(uint16_t code_req, uint16_t id,uint16_t numbloc, int datalen, char * data){
-	//7 octets + le nombre d'octets pour le texte du billet
-	char * res = (char *)malloc((4 + datalen ) * sizeof(char));
-	if(res == NULL){
-		perror("malloc");
-		return NULL;
-	}
-	//remplir l'entête
-	((uint16_t *)res)[0] = entete_message(code_req,id);
-	//les autres champs
-	((uint16_t *)res)[1] = htons(numbloc);
 
-	//copier le texte du message
-	if(datalen > 0){
-		memmove(res+4, data, datalen);    
-	}
-
-	return res;
-}
 
 char * message_dernier_billets(uint16_t id, uint16_t numfil, uint16_t nb){
 	uint16_t code_req = CODE_REQ_DEMANDE_BILLETS;

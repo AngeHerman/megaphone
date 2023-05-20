@@ -34,6 +34,17 @@ int inscrire_client(int sock, inscrits_t * inscrits);
 */
 void envoie_message_erreur(int sock);
 
+/**
+ * @brief envoie au client le numéro de port sur lequel le serveur recevra les paquets UDP
+ * 
+ * @param sock socket de communication tcp
+ * @param numfil numfil demandé par le client
+ * @param id identifiant du client
+ * @param port le numéro de port sur lequel le serveur recevra les paquets UDP
+
+ * @return int 1 en cas de succes, 0 en cas de d'erreur
+ */
+int annoncer_ecoute_pour_recevoir_fichier(int sock, uint16_t numfil, uint8_t id, uint16_t port);
 
 /**
  * lit le message restant du client et poste le billet puis envoie la confirmation au client
@@ -48,4 +59,6 @@ int lire_jusqua_datalen(int sock, uint16_t *numfil, uint16_t *nb, uint8_t *datal
 
 int lire_data(int sock, uint8_t datalen, char *data);
 int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
+
+int abonner_a_fil(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
 #endif
