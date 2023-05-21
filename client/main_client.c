@@ -5,6 +5,10 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 #include "client.h"
 #include "interaction.h"
@@ -38,6 +42,16 @@ int main(int argc, char** argv) {
     case -2:
         fprintf(stderr, "Erreur: echec de creation de la socket.\n");
         exit(1);
+    }
+
+    /*création du repertoire serveur/fichiers s'il n'existe pas*/
+    const char* directory = "client/fichiers";  
+    struct stat st;
+    if (stat(directory, &st) == -1) {
+        if (mkdir(directory, 0777) != 0) {
+            fprintf(stderr,"Erreur lors de la création du répertoire client/fichiers.\n");
+            return 1;
+        }
     }
 
     char * line = readline("1) pour effectuer une requete\n2) pour quitter\n");

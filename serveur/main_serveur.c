@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 #include "inscrits.h"
@@ -122,6 +124,15 @@ int main(int argc, char *argv[]){
         exit(2);
     }
 
+    /*création du repertoire serveur/fichiers s'il n'existe pas*/
+    const char* directory = "serveur/fichiers";  
+    struct stat st;
+    if (stat(directory, &st) == -1) {
+        if (mkdir(directory, 0777) != 0) {
+            fprintf(stderr,"Erreur lors de la création du répertoire serveur/fichiers.\n");
+            return 1;
+        }
+    }
     
     while(1){
         struct sockaddr_in6 addrclient;

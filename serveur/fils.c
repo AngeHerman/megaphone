@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "fils.h"
 #include "messages_serveur.h"
@@ -140,8 +141,11 @@ fil_t * ajouter_nouveau_fil(fils_t * fs, char * orig){
     fs->nb_fils+=1;
     char path[50];
     sprintf(path,"serveur/fichiers/fil%d",f.num_fil);
-    if(mkdir(path,0777)<0){
-        perror("mkdir");
+    struct stat st;
+    if (stat(path, &st) == -1) {
+        if (mkdir(path, 0777) != 0) {
+            fprintf(stderr,"Erreur lors de la création du répertoire serveur/fichiers/fil_numfil.\n");
+        }
     }
     fil_t * res = fs->fils + (fs->nb_fils-1);
     pthread_mutex_unlock(&verrou_billets);

@@ -118,7 +118,7 @@ int abonnement_fil(int sock){
     }
     id = atoi(line);
     free(line);
-	line = readline("Entrez le numéro de fil ou 0 pour vous abonner à tous les fils:\n");
+	line = readline("Entrez le numéro de fil :\n");
     if(! line){
         perror("readline");
         return 0;
@@ -205,7 +205,7 @@ int telecharger_fichier(int sock){
     uint16_t id;
 	uint16_t numfil;
 	uint8_t datalen;
-	char file_name[PATH_MAX];
+	char file_name[255+1];
     memset(file_name,0,sizeof(file_name));
     char * line; 
     
@@ -230,7 +230,7 @@ int telecharger_fichier(int sock){
         perror("readline");
         return 0;
     }
-    memmove(file_name,line,strlen(line)<=PATH_MAX ? strlen(line) : PATH_MAX);
+    memmove(file_name,line,strlen(line)<=255 ? strlen(line) : 255);
     free(line);
     datalen = strlen(file_name);
 	int ret = telecharger_un_fichier(sock, id, numfil, datalen, file_name);

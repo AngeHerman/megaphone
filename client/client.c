@@ -254,6 +254,5 @@ uint16_t telecharger_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t
     if(reception_par_paquets_de_512(*sock_udp, nom_fichier, id, num_fil,1) <= 0)
         return 0;
     return 1;
-
 }
 

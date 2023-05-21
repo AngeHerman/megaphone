@@ -9,6 +9,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/select.h>
 
 #include "fichiers.h"
 
@@ -171,23 +172,36 @@ int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uin
     if(!(fic = init_fic(id, name_file, numfil)))
         return -1;
     while(continuer){
-        nb=recvfrom(sock_udp,buff,TAILLE_PAQUET_UDP+5,0,NULL,NULL);
-        if(nb==-1){
-            perror("recvfrom");
-            continue;
+        fd_set rset;
+        FD_ZERO(&rset);
+        FD_SET(sock_udp, &rset);
+        struct timeval timeout;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+        select(sock_udp+1, &rset, NULL, NULL, &timeout);
+        if(FD_ISSET(sock_udp, &rset)){
+            nb=recvfrom(sock_udp,buff,TAILLE_PAQUET_UDP+5,0,NULL,NULL);
+            if(nb==-1){
+                perror("recvfrom");
+                continue;
+            }
+            buff[nb]='\0';
+            uint16_t entete = ntohs(*(uint16_t*)buff);
+            uint16_t num_bloc = ntohs(*(((uint16_t*)buff)+1));
+            char * data = buff+4;
+            uint8_t code_req = fichier_code_req(entete);
+            uint16_t id = fichier_id_requete(entete);
+            if(code_req!=5){
+                perror("codereq error");
+                continue;
+            }
+            taille_fic+=nb-4;
+            continuer = add_bloc(fic,num_bloc,data, nb-4,is_client);
         }
-        buff[nb]='\0';
-        uint16_t entete = ntohs(*(uint16_t*)buff);
-        uint16_t num_bloc = ntohs(*(((uint16_t*)buff)+1));
-        char * data = buff+4;
-        uint8_t code_req = fichier_code_req(entete);
-        uint16_t id = fichier_id_requete(entete);
-        if(code_req!=5){
-            perror("codereq error");
-            continue;
+        else{
+            perror("reception fichier");
+            return 0; 
         }
-        taille_fic+=nb-4;
-        continuer = add_bloc(fic,num_bloc,data, nb-4,is_client);      
     }
     return taille_fic;
 }
