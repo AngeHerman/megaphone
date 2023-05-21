@@ -310,7 +310,7 @@ int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id
     close(*sock);
     *sock = -1;
     
-    int file_len = reception_par_paquets_de_512(*sock_udp, file_name, id, numfil);
+    int file_len = reception_par_paquets_de_512(*sock_udp, file_name, id, numfil,0);
 
     char* billet_file=(char*)malloc(datalen+100);
     if(!billet_file){

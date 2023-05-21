@@ -84,7 +84,7 @@ int demader_billets(int sock){
     }
     id = atoi(line);
     free(line);
-    line = readline("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
+    line = readline("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils :\n");
     if(! line){
         perror("readline");
         return 0;
@@ -118,7 +118,7 @@ int abonnement_fil(int sock){
     }
     id = atoi(line);
     free(line);
-	line = readline("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
+	line = readline("Entrez le numéro de fil ou 0 pour vous abonner à tous les fils:\n");
     if(! line){
         perror("readline");
         return 0;
@@ -194,7 +194,7 @@ int ajouter_fichier(int sock,char* hostname){
     datalen = strlen(file_name);
 	int ret = ajouter_un_fichier(sock, id, numfil, datalen, file_name, hostname, file_path);
     free(file_name);
-    if(!ret==0)
+    if(!ret)
         fprintf(stderr,"Le fichier n'a pas été ajouté\n");
     else
         printf("la demande de transfert de fichier sur le fil numéro %u a été effectuée\n", numfil);
@@ -202,7 +202,43 @@ int ajouter_fichier(int sock,char* hostname){
 }
 
 int telecharger_fichier(int sock){
-    return 0;
+    uint16_t id;
+	uint16_t numfil;
+	uint8_t datalen;
+	char file_name[PATH_MAX];
+    memset(file_name,0,sizeof(file_name));
+    char * line; 
+    
+    line = readline("Entrez votre id :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    id = atoi(line);
+    free(line);
+    
+    line = readline("Entrez le numéro du fil où telecharger le fichier :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    numfil = atoi(line);
+    free(line);
+    
+    line = readline("Entrez le nom du fichier à telecharger :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    memmove(file_name,line,strlen(line)<=PATH_MAX ? strlen(line) : PATH_MAX);
+    free(line);
+    datalen = strlen(file_name);
+	int ret = telecharger_un_fichier(sock, id, numfil, datalen, file_name);
+    if(!ret)
+        fprintf(stderr,"Le fichier n'a pas été telechargé\n");
+    else
+        printf("la demande de téléchargement de fichier du fil numéro %u a été effectuée\n", numfil);
+    return 1;
 }
 
 int choix_client(int sock,char* hostname){

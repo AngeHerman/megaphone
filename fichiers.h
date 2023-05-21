@@ -7,11 +7,10 @@
 
 #define TAILLE_PAQUET_UDP 512
 #define CODE_REQ_AJOUT_FICHIER 5 //code_req pour l'ajout de fichier
-
 #define SIZE_MESS_SERV 6
-
 #define TAILLE_MAX_STRING 4096 //taille maximale des char *
 #define TAILLE_MAX_AJOUT_FICHIER 33554432 //en octets
+#define CHEMIN_FICHIER_CLIENT "client/fichier/"
 
 typedef struct bloc{
     uint16_t num_bloc;
@@ -40,7 +39,7 @@ typedef struct fic{
  * 
  * @return int taille du fichier reçu, ou -1 en cas d'erreur 
 */
-int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uint16_t numfil);
+int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uint16_t numfil, int is_client);
 
 /**
  * @brief Envoie le fichier par paquets de 512

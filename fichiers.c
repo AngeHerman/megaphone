@@ -70,9 +70,13 @@ void free_fic(fic_t * fic){
  * @param fic buffer contenant les données du fichier
  * @return int 1 en cas de succes, 0 en cas d'erreur
  */
-int save_fic(fic_t * fic){
+int save_fic(fic_t * fic,int is_client){
     char path[50];
-    sprintf(path,"serveur/fichiers/fil%d/%s",fic->numfil,fic->namefile);
+    if(is_client){
+        sprintf(path,"%s%s",CHEMIN_FICHIER_CLIENT,fic->namefile);
+    }else{
+        sprintf(path,"serveur/fichiers/fil%d/%s",fic->numfil,fic->namefile);
+    }
     int fd = open(path,O_CREAT|O_TRUNC|O_WRONLY,0777);
     if(fd<0){
         perror("open");
@@ -101,7 +105,7 @@ int save_fic(fic_t * fic){
  * @param len la taille de data
  * @return int FALSE si on a recu tout le fichier, TRUE sinon
  */
-int add_bloc(fic_t* fic, uint16_t numbloc,char* data, int len){
+int add_bloc(fic_t* fic, uint16_t numbloc,char* data, int len, int is_client){
     bloc_t * bloc = (bloc_t*)malloc(sizeof(bloc_t));
     memset(bloc,0,sizeof(bloc_t));
     if(bloc==NULL){
@@ -140,7 +144,7 @@ int add_bloc(fic_t* fic, uint16_t numbloc,char* data, int len){
     }
     
     if(fic->num_dernier_bloc == fic->nb_bloc_recus){//on a eu tout les blocs
-        save_fic(fic);
+        save_fic(fic,is_client);
         return FALSE;
     }
     return TRUE;
@@ -158,7 +162,7 @@ uint16_t fichier_id_requete(uint16_t entete){
     return id;
 }
 
-int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uint16_t numfil){
+int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uint16_t numfil, int is_client){
     char buff[TAILLE_PAQUET_UDP+5]={0};
     int nb=0;//la taille du dernier paquet reçu
     int taille_fic=0;//taille du fichier reçu
@@ -183,7 +187,7 @@ int reception_par_paquets_de_512(int sock_udp, char* name_file, uint16_t id, uin
             continue;
         }
         taille_fic+=nb-4;
-        continuer = add_bloc(fic,num_bloc,data, nb-4);      
+        continuer = add_bloc(fic,num_bloc,data, nb-4,is_client);      
     }
     return taille_fic;
 }

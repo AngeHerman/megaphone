@@ -6,7 +6,6 @@
 #define NB_OCTECS_REPONSES_ABONNEMENT 22//code_req et ID (2 otects)+Numfil (2 otects)+nb (2) + adresse(16)
 #define NB_OCTECS_MESSAGE_SERVEUR 6
 #define TAILLE_MAX_AJOUT_FICHIER 33554432 //en octets
-#define CHEMIN_FICHIER_CLIENT "client/fichier/"
 #define TAILLE_MAX_STRING 4096 //taille maximale des char *
 
 
@@ -52,10 +51,17 @@ int demande_abonnement(int sock,u_int16_t id_client,uint16_t numfil);
 int get_data(char *data,int taille,int sock);
 
 /**
- * @brief ajoue le fichier de nom data au fil f
+ * @brief ajoute le fichier nom_fichier au fil f
  * @return 0 en cas d'échec, le numéro du fil sur lequel le fichier a été posté sinon
 */
 uint16_t ajouter_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t taille_nom_fichier, char * nom_fichier,char * hostname, char* file_path);
+
+/**
+ * @brief télécharge le fichier nom_fichier du fil f
+ * @return 0 en cas d'échec, le numéro du fil sur lequel le fichier a été posté sinon
+*/
+uint16_t telecharger_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t taille_nom_fichier, char * nom_fichier);
+
 
 
 

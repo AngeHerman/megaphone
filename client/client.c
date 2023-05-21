@@ -56,6 +56,29 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
     return 0;
 }
 
+int socket_udp_telechargement(int* sock_udp, int* port){
+    *sock_udp = socket(PF_INET6, SOCK_DGRAM, 0);
+    if (*sock_udp < 0) {
+        return 0;
+    }
+    struct sockaddr_in6 servadrudp;
+    memset(&servadrudp, 0, sizeof(servadrudp));
+    servadrudp.sin6_family = AF_INET6;
+    servadrudp.sin6_addr = in6addr_any;
+    //le système choisira un port
+    servadrudp.sin6_port = htons(0);
+    if (bind(*sock_udp, (struct sockaddr *)&servadrudp, sizeof(servadrudp)) < 0) {
+        return 0;
+    }
+    //obtenir le port choisi
+    socklen_t addrlen = sizeof(servadrudp);
+    if(getsockname(*sock_udp,(struct sockaddr*)&servadrudp,&addrlen)==-1){
+        return 0;
+    }
+    *port = ntohs(servadrudp.sin6_port);
+    return 1;
+}
+
 int get_data(char *data,int taille,int sock){
     buf_t *buf = creer_buf_t(taille);
     if (buf == NULL){
@@ -196,12 +219,40 @@ uint16_t ajouter_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t tai
     memset(data,0,NB_OCTECS_MESSAGE_SERVEUR);
     if (!get_data(data,NB_OCTECS_MESSAGE_SERVEUR,sock))
         return 0;
-    uint16_t port = reponse_ajout_fichier(data);
+    uint16_t port = reponse_ajout_fichier(data,id);
     if(!port)
         return 0;
     close(sock);
     if(!envoi_fichier(id,port,file_path,hostname)){
         return 0;
     }
+    return 1;
+}
+
+uint16_t telecharger_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t taille_nom_fichier, char * nom_fichier){
+    int port_udp;
+    int * sock_udp = (int*)malloc(sizeof(int));
+    if(!sock_udp){
+        perror("malloc");
+        return 0;
+    }
+    if(!socket_udp_telechargement(sock_udp,&port_udp))
+        return 0;
+    char * mess_telechargement_fichier = message_client(CODE_REQ_TELECHARGER_FICHIER,id,num_fil,port_udp,taille_nom_fichier,nom_fichier);
+    if(send(sock,mess_telechargement_fichier,LEN_MESS_CLIENT+taille_nom_fichier,0) != LEN_MESS_CLIENT+taille_nom_fichier){
+        free(mess_telechargement_fichier);
+        return 0;
+    }
+    char data[NB_OCTECS_MESSAGE_SERVEUR];
+    memset(data,0,NB_OCTECS_MESSAGE_SERVEUR);
+    if (!get_data(data,NB_OCTECS_MESSAGE_SERVEUR,sock))
+        return 0;
+    if(!reponse_telechargement_fichier(data,id,num_fil,port_udp))
+        return 0;
+    close(sock);
+    if(reception_par_paquets_de_512(*sock_udp, nom_fichier, id, num_fil,1) <= 0)
+        return 0;
+    return 1;
 
 }
+

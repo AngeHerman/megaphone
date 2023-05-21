@@ -2,6 +2,31 @@
 #define REPONSES_SERVEUR_H
 
 
+
+/**
+ * @brief renvoie l'entete de rep
+ * 
+ * @param rep tableau char contanant le message du serveur
+ * @return l'entete de rep
+*/
+uint16_t get_entete(char * rep);
+
+/**
+ * @brief renvoie le numfil de rep
+ * 
+ * @param rep tableau char contanant le message du serveur
+ * @return le numfil de rep
+*/
+uint16_t get_num_fil(char * rep);
+
+/**
+ * @brief renvoie le nb de rep
+ * 
+ * @param rep tableau char contanant le message du serveur
+ * @return le nb de rep
+*/
+uint16_t get_nb(char * rep);
+
 /**
  * @brief verifie que la réponse du serveur à l'inscription du client respecte le bon format et renvoie 
  * l'id attribué par le serveur
@@ -41,9 +66,10 @@ int reponse_abonnement(char *rep,struct in6_addr *addr,uint16_t *port, uint16_t 
 /**
  * @brief verifie que la réponse du serveur respecte le bon format et renvoie le numero de port UDP
  * @param rep la reponses du serveur
+ * @param id identifiant de l'utilisateur
  * @return uint16_t le numéro de port UDP ou 0 en cas d'échec
 */
-uint16_t reponse_ajout_fichier(char * rep);
+uint16_t reponse_ajout_fichier(char * rep,int id_user);
 
 /**
  * @brief verifie que le message de notification respecte le bon format
@@ -57,5 +83,13 @@ uint16_t reponse_ajout_fichier(char * rep);
  * @return 1 en cas de succes et 0 sinon
  */
 int notification(char * mess_notif, uint16_t * numfil, char * pseudo, char * data);
+
+/**
+ * @brief verifie que la réponse du serveur respecte le bon format
+ * @param rep la reponses du serveur
+ * @param id identifiant de l'utilisateur
+ * @return uint16_t le numéro de port UDP ou 0 en cas d'échec
+*/
+uint16_t reponse_telechargement_fichier(char * rep,uint16_t id_user,uint16_t numfil_client,uint16_t port);
 
 #endif
