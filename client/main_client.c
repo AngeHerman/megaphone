@@ -8,6 +8,7 @@
 
 #include "client.h"
 #include "interaction.h"
+#include "readline/readline.h"
 
 #define DEFAULT_SERVER "lulu"
 #define DEFAULT_PORT "7777"
@@ -39,9 +40,14 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    int ret;
-    while(1){
-        if(fdsock==-1){
+    char * line = readline("1) pour effectuer une requete\n2) pour quitter\n");
+    if(!line){
+        perror("readline");
+        return 1;
+    }
+    while(atoi(line)==1){
+        free(line);
+        if(fdsock==-1){//se connecter au serveur
             if((fdsock = socket(PF_INET6, SOCK_STREAM, 0)) > 0){
                 if(connect(fdsock,(struct sockaddr *) &server_addr, sizeof(server_addr)) ==-1 )
                     break;
@@ -50,10 +56,17 @@ int main(int argc, char** argv) {
                 break;
         }
         //demander au client l'action voulue et l'exécuter
-        ret = choix_client(fdsock,hostname);
+        choix_client(fdsock,hostname);
         
         close(fdsock);
         fdsock = -1;
+    
+        line = readline("1) pour effectuer une requete\n2) pour quitter\n");
+        if(!line){
+            perror("readline");
+            return 1;
+        }
     }
-    return ret;
+    printf("Au revoir\n");
+    return 0;
 }

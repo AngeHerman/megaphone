@@ -9,20 +9,20 @@
  * @param rep tableau de 3 uint16_t contanant le message du serveur
  * @return uint16_t l'id du client ou 0 en cas d'échec
 */
-uint16_t reponse_inscription(uint16_t * rep);
+uint16_t reponse_inscription(char * rep);
 
 /**
  * @brief verifie que la réponse du serveur respecte le bon format et renvoie le numero du fil
  * @param rep tableau de 3 uint16_t contanant le message du serveur
  * @return uint16_t le numfil ou 0 en cas d'échec
 */
-uint16_t reponse_poster_billet(uint16_t * rep);
+uint16_t reponse_poster_billet(char * rep);
 
 /**
  * @param rep la reponse du serveur à décoder
  * @return le nombre de message à venir
 */
-u_int16_t reponse_derniers_billets(u_int16_t * rep);
+u_int16_t reponse_derniers_billets(char * rep);
 
 /**
  * @param rep la reponse du serveur jusqu'à datalen à décoder

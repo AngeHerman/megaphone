@@ -10,12 +10,12 @@
 #include "reponses_serveur.h"
 #include "messages_client.h"
 
-u_int16_t reponse_inscription(uint16_t * rep){
+u_int16_t reponse_inscription(char * rep){
     uint8_t cod_req;
     uint16_t id;
-    u_int16_t numfil = ntohs(rep[1]);
-    u_int16_t nb = ntohs(rep[2]);
-    u_int16_t entete = ntohs(rep[0]);
+    u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
+    u_int16_t nb = ntohs(((uint16_t *)rep)[2]);
+    u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
     u_int16_t masque = 0b0000000000011111;
     cod_req = entete & masque;
     id = (entete & ~masque) >> 5;
@@ -31,15 +31,13 @@ u_int16_t reponse_inscription(uint16_t * rep){
     return id;
 }
 
-uint16_t reponse_poster_billet(uint16_t * rep){
-    uint8_t cod_req;
-    uint16_t id;
-    u_int16_t numfil = ntohs(rep[1]);
-    u_int16_t nb = ntohs(rep[2]);
-    u_int16_t entete = ntohs(rep[0]);
+uint16_t reponse_poster_billet(char * rep){
+    u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
+    u_int16_t nb = ntohs(((uint16_t *)rep)[2]);
+    u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
     u_int16_t masque = 0b0000000000011111;
-    cod_req = entete & masque;
-    id = (entete & ~masque) >> 5;
+    uint8_t cod_req = entete & masque;
+    uint16_t id = (entete & ~masque) >> 5;
 
     if(cod_req==31)
         return 0;
@@ -52,15 +50,13 @@ uint16_t reponse_poster_billet(uint16_t * rep){
     return numfil;
 }
 
-u_int16_t reponse_derniers_billets(u_int16_t * rep){
-	uint8_t cod_req;
-	uint16_t id;
-	u_int16_t numfil = ntohs(rep[1]);
-	u_int16_t nb = ntohs(rep[2]);
-	u_int16_t entete = ntohs(rep[0]);
+u_int16_t reponse_derniers_billets(char * rep){
+	u_int16_t numfil = ntohs(((uint16_t *)rep)[1]);
+	u_int16_t nb = ntohs(((uint16_t *)rep)[2]);
+	u_int16_t entete = ntohs(((uint16_t *)rep)[0]);
 	u_int16_t masque = 0b0000000000011111;
-	cod_req = entete & masque;
-	id = (entete & ~masque) >> 5;
+	uint8_t cod_req = entete & masque;
+	uint16_t id = (entete & ~masque) >> 5;
 
 
 	if(cod_req!= CODE_REQ_DEMANDE_BILLETS){

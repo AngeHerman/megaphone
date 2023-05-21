@@ -5,6 +5,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
+#include <readline/readline.h>
+#include <limits.h>
 
 #include "client.h"
 #include "interaction.h"
@@ -14,90 +16,121 @@
 
 int inscrire_client(int sock){
     char pseudo[11];
-    memset(pseudo, 0, 11);
-    printf("Entrez votre pseudo (entre 1 et 10 caractères) :\n");
-    fgets(pseudo,11,stdin);
-    memset(pseudo+strlen(pseudo)-1, '#', 10-strlen(pseudo)+1);
+    memset(pseudo,'#',10);
+    pseudo[10]='\0';
+    char * pseudo_rep = readline("Entrez votre pseudo (entre 1 et 10 caractères) :\n");
+    if(!pseudo_rep){
+        perror("readline");
+        return 0;
+    }
+    memmove(pseudo, pseudo_rep, strlen(pseudo_rep)<=10 ? strlen(pseudo_rep) : 10);//on prends les 10 premiers caractères
     printf("pseudo : %s\n", pseudo);
-
+    free(pseudo_rep);
     uint16_t id = demande_inscription(sock, pseudo);
     if(id){
         printf("inscription réussie. ID attribué : %d\n", id);
         return 1;
     }
-    printf("Echec, le serveur n'a pas pu vous inscrire\n");
+    fprintf(stderr, "Echec, le serveur n'a pas pu vous inscrire\n");
     return 0;
 }
 
 int poster_billet(int sock){
-    int id;
-    int numfil;
+    uint16_t id;
+    uint16_t numfil;
     uint8_t datalen;
     char texte[255+1];
     memset(texte,0,sizeof(texte));
-    char temp[255+1+1];
-    memset(temp,0,sizeof(temp));
-    char nb[7]={0};
-    printf("Entrez votre id :\n");
-    fgets(nb,7,stdin);
-    id = atoi(nb);
-    memset(nb,0,sizeof(nb));
-    printf("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
-    fgets(nb,7,stdin);
-    numfil = atoi(nb);
-    printf("Entrez le texte du billet :\n");
-    fgets(temp, 257, stdin);
-    memmove(texte,temp,strlen(temp)-1);//enlever le '\n'
-    datalen = strlen(texte);
-    
-    uint16_t res = poster_un_billet(sock, id, numfil, datalen, texte);
-    if(res==0){
-        fprintf(stderr,"Le billet n'est pas posté\n");
+    char * line = NULL;
+    line = readline("Entrez votre id :\n");
+    if(!line){
+        perror("readline");
         return 0;
     }
-    printf("Le billet est posté sur le fil numéro %u\n", res);
-    return 1;
+    id = atoi(line);
+    free(line);
+    line = readline("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    numfil = atoi(line);
+    free(line);
+    line = readline("Entrez le texte du billet :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    memmove(texte,line,strlen(line)<=255 ? strlen(line) : 255);//enlever le '\n'
+    datalen = strlen(texte);
+    free(line);
+    int ret = poster_un_billet(sock, id, numfil, datalen, texte);
+    if(!ret)
+        fprintf(stderr,"Le billet n'est pas posté\n");
+    else
+        printf("Le billet est posté sur le fil numéro %u\n", ret);
+    return ret;
 }
 
 int demader_billets(int sock){
     int id;
     int numfil;
     int nb_billets;
-    char nb[7]={0};
-    printf("Entrez votre id :\n");
-    fgets(nb,7,stdin);
-    id = atoi(nb);
-    memset(nb,0,sizeof(nb));
-    printf("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
-    fgets(nb,7,stdin);
-    numfil = atoi(nb);  
-    memset(nb,0,sizeof(nb));
-    printf("Entrez le nombre de billet voulu :\n");
-    fgets(nb,7,stdin);
-    nb_billets = atoi(nb);
-    
-    int res = demande_dernier_billets(sock, id, numfil, nb_billets);
-    if(res==0){
+    char * line = NULL;
+    line = readline("Entrez votre id :\n");
+    if(! line){
+        perror("readline");
+        return 0;
+    }
+    id = atoi(line);
+    free(line);
+    line = readline("Entrez le numéro de fil ou 0 pour poster le billet sur un nouveau fil :\n");
+    if(! line){
+        perror("readline");
+        return 0;
+    }
+    numfil = atoi(line);  
+    free(line);
+    line = readline("Entrez le nombre de billet voulu :\n");
+    if(! line){
+        perror("readline");
+        return 0;
+    }
+    nb_billets = atoi(line);
+    free(line); 
+    int ret = demande_dernier_billets(sock, id, numfil, nb_billets);
+    if(ret==0){
         fprintf(stderr,"La demande a échouée\n");
         return 0;
     }
-    // printf("Demande réussi %u\n", res);
     return 1;
 }
 
 int abonnement_fil(int sock){
-	int id;
-	int numfil;
-
-    char nb[7]={0};
-	printf("Entrez votre id :\n");
-    fgets(nb,7,stdin);
-    id = atoi(nb);
-    memset(nb,0,sizeof(nb));
-	printf("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
-    fgets(nb,7,stdin);
-    numfil = atoi(nb);  
-    return demande_abonnement(sock, id, numfil);
+	uint16_t id;
+	uint16_t numfil;
+    
+    char * line = NULL;
+    line = readline("Entrez votre id :\n");
+    if(! line){
+        perror("readline");
+        return 0;
+    }
+    id = atoi(line);
+    free(line);
+	line = readline("Entrez le numéro de fil ou 0 pour demander les billets de tous les fils:\n");
+    if(! line){
+        perror("readline");
+        return 0;
+    }
+    numfil = atoi(line);  
+    free(line);
+    int ret = demande_abonnement(sock, id, numfil);
+    if(!ret)
+        fprintf(stderr,"demande d'abonnement echouée\n");
+    else
+        printf("demande d'abonnement effectuée\n");
+    return ret;
 }
 
 char * get_file_name(char * path){
@@ -123,38 +156,48 @@ char * get_file_name(char * path){
 }
 
 int ajouter_fichier(int sock,char* hostname){
-	int id;
-	int numfil;
+	uint16_t id;
+	uint16_t numfil;
 	uint8_t datalen;
-	char file_path[255+1];
-    char tmp[255+1+1];
-    char nb[7];
+	char file_path[PATH_MAX];
     memset(file_path,0,sizeof(file_path));
-    memset(tmp,0,sizeof(tmp));
+    char * line; 
     
-    printf("Entrez votre id :\n");
-    fgets(nb,7,stdin);
-    id = atoi(nb);
-    memset(nb,0,sizeof(nb));
-    printf("Entrez le numéro du fil où envoyer le fichier :\n");
-    fgets(nb,7,stdin);
-    numfil = atoi(nb);
-    printf("Entrez le chemin du fichier à envoyer :\n");
-    fgets(tmp, 257, stdin);
-    memmove(file_path,tmp,strlen(tmp)-1);//enlever le '\n'
+    line = readline("Entrez votre id :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    id = atoi(line);
+    free(line);
+    
+    line = readline("Entrez le numéro du fil où envoyer le fichier :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    numfil = atoi(line);
+    free(line);
+    
+    line = readline("Entrez le chemin du fichier à envoyer :\n");
+    if(!line){
+        perror("readline");
+        return 0;
+    }
+    memmove(file_path,line,strlen(line)<=PATH_MAX ? strlen(line) : PATH_MAX);
+    free(line);
     char * file_name = get_file_name(file_path);
     if(!file_name){
         fprintf(stderr,"erreur path\n");
         return 0;
     }
     datalen = strlen(file_name);
-	uint16_t res = ajouter_un_fichier(sock, id, numfil, datalen, file_name, hostname, file_path);
+	int ret = ajouter_un_fichier(sock, id, numfil, datalen, file_name, hostname, file_path);
     free(file_name);
-    if(res==0){
+    if(!ret==0)
         fprintf(stderr,"Le fichier n'a pas été ajouté\n");
-        return 0;
-    }
-    printf("la demande de transfert de fichier sur le fil numéro %u a été effectuée\n", numfil);
+    else
+        printf("la demande de transfert de fichier sur le fil numéro %u a été effectuée\n", numfil);
     return 1;
 }
 
@@ -163,19 +206,16 @@ int telecharger_fichier(int sock){
 }
 
 int choix_client(int sock,char* hostname){
-	char inscription[] = "Tapez 1 pour s'inscrire auprès du serveur\n";
-	char poster_un_billet[] = "Tapez 2 pour poster un billet sur un fil\n"; 
-	char demande_billets[] = "Tapez 3 pour demander la liste des derniers billets sur un fil\n";
-	char abonnement[] = "Tapez 4 pour vous abonner à un fil\n";
-	char ajout_fichier[] = "Tapez 5 pour ajouter un fichier sur un fil\n";
-	char tlc_fichier[] = "Tapez 6 pour telecharger un fichier\n";
+	char choix[] = "Tapez 1 pour s'inscrire auprès du serveur\nTapez 2 pour poster un billet sur un fil\nTapez 3 pour demander la liste des derniers billets sur un fil\nTapez 4 pour vous abonner à un fil\nTapez 5 pour ajouter un fichier sur un fil\nTapez 6 pour telecharger un fichier\n";
     pthread_mutex_lock(&verrou_affichage);
-	printf("%s%s%s%s%s%s", inscription, poster_un_billet, demande_billets,abonnement,ajout_fichier,tlc_fichier);
+	char* rep_char = readline(choix);
     pthread_mutex_unlock(&verrou_affichage);
-	int rep_client;
-	char rep_s[3] = {0};
-	fgets(rep_s, 3, stdin);
-	rep_client = atoi(rep_s);
+    if(rep_char==NULL){
+        perror("readline");
+        return 0;
+    }
+	int rep_client = atoi(rep_char);
+    free(rep_char);
 	switch (rep_client){
 		case 1:
 			return inscrire_client(sock);

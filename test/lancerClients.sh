@@ -1,0 +1,1 @@
+./main_client localhost 7777 < test/client1

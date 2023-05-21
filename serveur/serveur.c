@@ -16,39 +16,6 @@
 
 #define NB_OCTECS_REPONSES_ABONNEMENT 22//code_req et ID (2 otects)+Numfil (2 otects)+nb (2) + adresse(16)
 
-typedef struct udp{
-    int sock;
-    char * filename;
-    uint16_t id;
-    uint16_t numfil;
-}udp_t;
-
-
-udp_t * init_infos_udp(int sock, char * filename, uint16_t id, uint16_t numfil){
-    udp_t * res = (udp_t *)malloc(sizeof(udp_t));
-    if(!res){
-        perror("malloc");
-        return NULL;
-    }
-    res->sock = sock;
-    res->filename = malloc(strlen(filename)+1);
-    if(!res->filename){
-        free(res);
-        perror("malloc");
-        return NULL;
-    }
-    memmove(res->filename, filename, strlen(filename));
-    res->filename[strlen(filename)]='\0';
-    res->id = id;
-    res->numfil = numfil;
-    return res;
-}
-
-void free_infos_udp(udp_t * infos_udp){
-    free(infos_udp->filename);
-    free(infos_udp);
-}
-
 uint16_t lire_entete(int sock)
 {
     buf_t *buf = creer_buf_t(2);
@@ -404,6 +371,5 @@ int abonner_a_fil(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
     }
     
     int r = confirmer_abonnement(sock, filst, numfil, id);
-    printf("retour: %d\n", r);
     return r;
 }

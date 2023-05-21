@@ -28,7 +28,7 @@ void affiche_adresse(struct sockaddr_in6 *adr){
 int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6* addr, int* addrlen) {
     struct addrinfo hints, *r, *p;
     int ret;
-    //memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_V4MAPPED | AI_ALL;
@@ -46,11 +46,11 @@ int get_server_addr(char* hostname, char* port, int * sock, struct sockaddr_in6*
                 break;
             close(*sock);
         }
-
         p = p->ai_next;
     }
+    if (NULL == p) 
+        return -2;
 
-    if (NULL == p) return -2;
     *addr = *((struct sockaddr_in6 *)p->ai_addr);
     freeaddrinfo(r);
     return 0;
@@ -75,7 +75,6 @@ int get_data(char *data,int taille,int sock){
 
 
 int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16_t nb){
-
     char * mess_dernier_billets = message_dernier_billets(id_client,numfil,nb);
     if(send(sock, mess_dernier_billets,LEN_MESS_CLIENT,0) != LEN_MESS_CLIENT){
         free(mess_dernier_billets);
@@ -84,12 +83,10 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
     free(mess_dernier_billets);
 
     //réponse du serveur
-    u_int16_t rep[3];
-    int taille = 0;
-    if((taille = recv(sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
-        printf("Taille recv est %d\n",taille);
+    char rep[NB_OCTECS_MESSAGE_SERVEUR];
+    memset(rep,0,NB_OCTECS_MESSAGE_SERVEUR);
+    if (!get_data(rep,NB_OCTECS_MESSAGE_SERVEUR,sock))
         return 0;
-    }
 
     uint16_t nbb = reponse_derniers_billets(rep);
     printf("Il ya exactement %u messages qui arrivent\n",nbb);
@@ -157,11 +154,10 @@ uint16_t demande_inscription(int fd_sock, char * pseudo){
     free(mess_inscr);
 
     //réponse du serveur
-    u_int16_t rep[3];
-    int len = 0;
-    if( (len = recv(fd_sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
+    char rep[NB_OCTECS_MESSAGE_SERVEUR];
+    memset(rep,0,NB_OCTECS_MESSAGE_SERVEUR);
+    if (!get_data(rep,NB_OCTECS_MESSAGE_SERVEUR,fd_sock))
         return 0;
-    }
     uint16_t id = reponse_inscription(rep);
     return id;
 }
@@ -178,11 +174,10 @@ uint16_t poster_un_billet(int sock,uint16_t id, uint16_t num_fil, uint8_t datale
     free(mess);
 
     //réponse du serveur
-    u_int16_t rep[3];
-    int len = 0;
-    if( (len = recv(sock,rep, sizeof(rep) ,0)) != sizeof(rep)){
+    char rep[NB_OCTECS_MESSAGE_SERVEUR];
+    memset(rep,0,NB_OCTECS_MESSAGE_SERVEUR);
+    if (!get_data(rep,NB_OCTECS_MESSAGE_SERVEUR,sock))
         return 0;
-    }
     return reponse_poster_billet(rep);
 }
 

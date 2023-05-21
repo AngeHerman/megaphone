@@ -1,5 +1,5 @@
 main_client : main_serveur bin/main_client.o bin/messages_client.o bin/reponses_serveur.o bin/client.o bin/interaction.o bin/lecture.o bin/abonnement.o bin/fichiers.o
-	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o bin/abonnement.o bin/fichiers.o -o main_client 
+	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o bin/abonnement.o bin/fichiers.o -L/usr/include -lreadline -o main_client 
 bin/main_client.o : client/main_client.c client/client.h 
 	gcc -c client/main_client.c -o bin/main_client.o
 bin/client.o : client/client.c client/client.h client/messages_client.h lecture.h fichiers.h
