@@ -256,7 +256,7 @@ int get_server_addrudp(char* hostname, char* port, int * sock_udp, struct sockad
 int creer_socket_udp_envoi(int* sock_udp, int port,struct in6_addr addr_client_recup, struct sockaddr_in6* addr_envoi,int* addrlen){
 
     *sock_udp = socket(PF_INET6, SOCK_DGRAM, 0);
-    if (sock_udp < 0) return 0;
+    if (*sock_udp < 0) return 0;
 
     // Adresse de destination
     memset(addr_envoi, 0, sizeof(struct sockaddr_in6));

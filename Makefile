@@ -1,5 +1,6 @@
+all : bin main_client main_serveur 
 main_client : main_serveur bin/main_client.o bin/messages_client.o bin/reponses_serveur.o bin/client.o bin/interaction.o bin/lecture.o bin/abonnement.o bin/fichiers.o
-	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o bin/abonnement.o bin/fichiers.o -L/usr/include -lreadline -o main_client 
+	gcc bin/main_client.o bin/client.o bin/reponses_serveur.o bin/messages_client.o bin/interaction.o bin/lecture.o bin/abonnement.o bin/fichiers.o -L/usr/include -lreadline -pthread -o main_client 
 bin/main_client.o : client/main_client.c client/client.h 
 	gcc -c client/main_client.c -o bin/main_client.o
 bin/client.o : client/client.c client/client.h client/messages_client.h lecture.h fichiers.h
@@ -30,6 +31,9 @@ bin/inscrits.o : serveur/inscrits.c serveur/inscrits.h
 
 bin/lecture.o : lecture.c lecture.h 
 	gcc -c lecture.c -o bin/lecture.o
+
+bin : 
+	mkdir bin
 
 clean : 
 	rm -rf  main_client main_serveur bin/*.o serveur/fichiers/* client/fichiers/*

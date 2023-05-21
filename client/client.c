@@ -132,7 +132,7 @@ int demande_dernier_billets(int sock,u_int16_t id_client,uint16_t numfil, uint16
 }
 
 int sabonner_au_fil(struct in6_addr addr_diffus, uint16_t port){
-    info_abonn* infos = malloc(sizeof(info_abonn));
+    info_abonn* infos = (info_abonn*)malloc(sizeof(info_abonn));
     if(!infos){
         perror("malloc");
         return 0;

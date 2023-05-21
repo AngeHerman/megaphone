@@ -370,7 +370,7 @@ int telecharger_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t
     
     struct sockaddr_in6 addr;
     socklen_t addr_len = sizeof(addr);
-    if (getsockname(*sock, (struct sockaddr *)&addr, &addr_len) == -1) {
+    if (getpeername(*sock, (struct sockaddr *)&addr, &addr_len) == -1) {
         perror("Erreur lors de l'obtention de l'adresse de la socket");
         return 0;
     }
@@ -380,7 +380,6 @@ int telecharger_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t
     //terminer la connexion
     close(*sock);
     *sock = -1;
-
     if(!envoi_fichier(id,nb,file_path,"",0,addr.sin6_addr)){
         return 0;
     }
@@ -402,7 +401,7 @@ int confirmer_abonnement(int sock, fils_t* filst,uint16_t numfil, u_int16_t id){
     }
     free(mess);
     if(r==2){//on lance la multidifusion
-        info_multi* infos = malloc(sizeof(info_multi));
+        info_multi* infos = (info_multi*) malloc(sizeof(info_multi));
         if(!infos){
             perror("malloc");
             return 0;
