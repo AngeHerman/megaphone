@@ -156,7 +156,7 @@ uint16_t reponse_telechargement_fichier(char * rep,uint16_t id_user,uint16_t num
 	uint16_t id = (entete & ~masque) >> 5;
 
 	if(cod_req!= CODE_REQ_TELECHARGER_FICHIER || id!= id_user || numfil_user!= numfil || port!= nb){
-		fprintf(stderr, "reponse ajout fichier est erroné et le code reçu est %d\n",cod_req);
+		fprintf(stderr, "reponse telechargement est erroné et le code reçu est %d\n",cod_req);
 		return 0;
 	}
 	return 1;

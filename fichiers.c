@@ -71,7 +71,7 @@ void free_fic(fic_t * fic){
  * @return int 1 en cas de succes, 0 en cas d'erreur
  */
 int save_fic(fic_t * fic,int is_client){
-    char path[50];
+    char path[4096];
     if(is_client){
         sprintf(path,"%s%s",CHEMIN_FICHIER_CLIENT,fic->namefile);
     }else{
@@ -239,6 +239,21 @@ int get_server_addrudp(char* hostname, char* port, int * sock_udp, struct sockad
     return 1;
 }
 
+int creer_socket_udp_envoi(int* sock_udp, int port,struct in6_addr addr_client_recup, struct sockaddr_in6* addr_envoi,int* addrlen){
+
+    *sock_udp = socket(PF_INET6, SOCK_DGRAM, 0);
+    if (sock_udp < 0) return 0;
+
+    // Adresse de destination
+    memset(addr_envoi, 0, sizeof(struct sockaddr_in6));
+    addr_envoi->sin6_family = AF_INET6;
+    addr_envoi->sin6_addr = addr_client_recup;
+    addr_envoi->sin6_port = htons(port);
+    *addrlen = sizeof(struct sockaddr_in6);
+
+    return 1;
+}
+
 uint16_t entete_mess(uint16_t code_req, uint16_t id){
     uint16_t res = 0;
 
@@ -300,16 +315,23 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
     return 1;
 }
 
-int envoi_fichier(uint16_t id, uint16_t port,char * file_path,char * hostname){
+int envoi_fichier(uint16_t id, uint16_t port,char * file_path,char * hostname,int is_client,struct in6_addr addr_client_recup){
     printf("file_path : %s\n", file_path);
-    struct sockaddr_in6 server_addr;
+    struct sockaddr_in6 addr_envoi;
     int sockUDP, adrlen;
     char port_en_char[10];
     memset(port_en_char,0,10);
     sprintf(port_en_char, "%u", port);
     printf("port:%s\n", port_en_char);
-    if(!get_server_addrudp(hostname,port_en_char, &sockUDP, &server_addr, &adrlen))
-        return 0;
+
+    if(is_client){
+        if(!get_server_addrudp(hostname,port_en_char, &sockUDP, &addr_envoi, &adrlen))
+            return 0;
+    }else{
+        if(!creer_socket_udp_envoi(&sockUDP,port,addr_client_recup,&addr_envoi,&adrlen))
+            return 0;
+    }
+
     int fd= open(file_path, O_RDONLY);
     if (fd == -1) {
         perror("erreur open");
@@ -322,7 +344,7 @@ int envoi_fichier(uint16_t id, uint16_t port,char * file_path,char * hostname){
         fprintf(stderr,"Fichier trop gros, taille max est %d\n",TAILLE_MAX_AJOUT_FICHIER);
         return 0;
     }
-    if(!envoi_par_paquets_de_512(fd,sockUDP,id,taille_fic,server_addr,adrlen)){
+    if(!envoi_par_paquets_de_512(fd,sockUDP,id,taille_fic,addr_envoi,adrlen)){
         return 0;
     }
     return 1;

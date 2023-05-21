@@ -61,4 +61,5 @@ int lire_data(int sock, uint8_t datalen, char *data);
 int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
 
 int abonner_a_fil(int sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
+int telecharger_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id);
 #endif

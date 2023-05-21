@@ -52,6 +52,9 @@ void *serve(void *arg) {
         /*recevoir un fichier*/
         case 5:
             rep = recevoir_fichier(&sock,inscrits,fils,get_id_requete(entete));
+        /*telecharger un fichier*/
+        case 6: 
+            rep = telecharger_fichier(&sock,inscrits,fils,get_id_requete(entete));
     }
     if(rep){//succès
         *ret = 1;

@@ -10,7 +10,7 @@
 #define SIZE_MESS_SERV 6
 #define TAILLE_MAX_STRING 4096 //taille maximale des char *
 #define TAILLE_MAX_AJOUT_FICHIER 33554432 //en octets
-#define CHEMIN_FICHIER_CLIENT "client/fichier/"
+#define CHEMIN_FICHIER_CLIENT "client/fichiers/"
 
 typedef struct bloc{
     uint16_t num_bloc;
@@ -51,7 +51,7 @@ int envoi_par_paquets_de_512(int fd, int sock,int id,int taille_fic, struct sock
  * @brief ajoue le fichier de chemin file_path sur le port port et adresse de nom hostname
  * @return 0 en cas d'échec, 1 si le fichier a été envoyé
 */
-int envoi_fichier(uint16_t id, uint16_t port,char * file_path,char * hostname);
+int envoi_fichier(uint16_t id, uint16_t port,char * file_path,char * hostname, int is_client,struct in6_addr addr_client_recup);
 
 /**
  * @brief Renvoie la taille du fichier file_name

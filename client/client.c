@@ -223,7 +223,8 @@ uint16_t ajouter_un_fichier(int sock, uint16_t id, uint16_t num_fil, uint8_t tai
     if(!port)
         return 0;
     close(sock);
-    if(!envoi_fichier(id,port,file_path,hostname)){
+    struct in6_addr addr_inutile;
+    if(!envoi_fichier(id,port,file_path,hostname,1,addr_inutile)){
         return 0;
     }
     return 1;

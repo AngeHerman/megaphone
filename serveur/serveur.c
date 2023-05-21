@@ -261,6 +261,8 @@ int creer_socket_udp(int* sock_udp, int* port){
     return 1;
 }
 
+
+
 int annoncer_ecoute_pour_recevoir_fichier(int sock, uint16_t numfil, uint8_t id, uint16_t port){
     char *mess = message_server(5, id, numfil, port);
     if (!mess)
@@ -323,6 +325,76 @@ int recevoir_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id
     int ret = ajouter_billet_num(filst, numfil, pseudo, strlen(billet_file), billet_file);
     free(billet_file);
     return ret;
+}
+
+int annoncer_envoi_de_fichier(int sock, uint16_t numfil, uint8_t id, uint16_t port){
+    char *mess = message_server(6, id, numfil, port);
+    if (!mess)
+        return 0;
+    if (send(sock, mess, SIZE_MESS_SERV, 0) != SIZE_MESS_SERV)
+    {
+        free(mess);
+        return 0;
+    }
+    free(mess);
+    return 1;
+}
+
+int telecharger_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t id){
+    printf("Arrivé 1\n");
+    char pseudo[LEN_PSEUDO + 1];
+    if (!est_inscrit(inscrits, id, pseudo)){ // le client n'est pas inscrit
+        return 0;
+    }
+    printf("Arrivé 2\n");
+    u_int16_t numfil;
+    u_int16_t nb;
+    u_int8_t datalen;
+    if (!lire_jusqua_datalen(*sock, &numfil, &nb, &datalen)){
+        return 0;
+    }
+    printf("Arrivé 3\n");
+
+    if(nb==0 || datalen==0)
+        return 0;
+    printf("Arrivé 4\n");
+    char* file_name= (char*)malloc(sizeof(char)*(datalen+1));
+    memset(file_name, 0, datalen+1);
+    if (!lire_data(*sock, datalen, file_name)){ // on met le texte du billet dans data
+        return 0;
+    }
+    printf("Arrivé 5\n");
+    // ajouter le billet
+    printf("file_name len : %d, file_name :%s\n", datalen, file_name);
+    char file_path[4096];
+    memset(file_path,0,sizeof(file_path));
+    sprintf(file_path,"serveur/fichiers/fil%d/%s",numfil,file_name);
+    // int * sock_udp = (int*)malloc(sizeof(int));
+    // if(!sock_udp){
+    //     perror("malloc");
+    //     return 0;
+    // }
+    struct sockaddr_in6 addr;
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(*sock, (struct sockaddr *)&addr, &addr_len) == -1) {
+        perror("Erreur lors de l'obtention de l'adresse de la socket");
+        return 0;
+    }
+    printf("Arrivé 6\n");
+
+    // if(!creer_socket_udp_envoi(sock_udp,&nb,addr.sin6_addr))
+    //     return 0;
+    printf("num fil %u id %u nb %u file_path %s\n",numfil,id,nb,file_path);
+    if(!annoncer_envoi_de_fichier(*sock,numfil,id,nb))
+        return 0;
+    //terminer la connexion
+    close(*sock);
+    *sock = -1;
+
+    if(!envoi_fichier(id,nb,file_path,"",0,addr.sin6_addr)){
+        return 0;
+    }
+    return 1;
 }
 
 int confirmer_abonnement(int sock, fils_t* filst,uint16_t numfil, u_int16_t id){
