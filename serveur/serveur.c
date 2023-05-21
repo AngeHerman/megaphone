@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <limits.h>
 
 #include "serveur.h"
 #include "../lecture.h"
@@ -364,7 +365,7 @@ int telecharger_fichier(int* sock, inscrits_t* inscrits, fils_t* filst, uint16_t
         return 0;
     }
 
-    char file_path[4096];
+    char file_path[PATH_MAX];
     memset(file_path,0,sizeof(file_path));
     sprintf(file_path,"serveur/fichiers/fil%d/%s",numfil,file_name);
     

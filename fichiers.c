@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/select.h>
+#include <limits.h>
 
 #include "fichiers.h"
 
@@ -72,7 +73,7 @@ void free_fic(fic_t * fic){
  * @return int 1 en cas de succes, 0 en cas d'erreur
  */
 int save_fic(fic_t * fic,int is_client){
-    char path[4096];
+    char path[PATH_MAX];
     if(is_client){
         sprintf(path,"%s%s",CHEMIN_FICHIER_CLIENT,fic->namefile);
     }else{
