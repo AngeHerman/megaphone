@@ -24,7 +24,7 @@ Les échanges entre les clients et le serveur suivent un modèle simple où les 
 
 ### Formats des messages
 
-Les messages échangés entre les clients et le serveur suivent un format défini pour garantir une communication claire et précise. Les détails sur le format des messages seront décrits plus en détail dans le fichier de [protocole](protocole-projet.pdf).
+Les messages échangés entre les clients et le serveur suivent un format défini pour garantir une communication claire et précise. Les détails sur le format des messages seront décrits plus en détail dans le fichier de [protocole](protocoles-projet.pdf).
 
 ## Installation
 
