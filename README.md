@@ -30,7 +30,7 @@ Les messages échangés entre les clients et le serveur suivent un format défin
 
 1. **Cloner le dépôt du projet** :
     ```bash
-    git clone <URL_DU_DEPOT>
+    git clone https://github.com/AngeHerman/megaphone.git
     ```
 2. **Accéder au répertoire du projet** :
     ```bash
